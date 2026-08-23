@@ -1,0 +1,20 @@
+---
+import type { Post } from "@/types";
+import { getPostUrl } from "@/utils/content";
+import { formatDate } from "@/utils/text";
+
+type Props = {
+  posts: Post[];
+};
+
+const { posts } = Astro.props;
+---
+
+<ul class="post-list">
+  {posts.map((post) => (
+    <li>
+      <time datetime={post.data.published.toISOString()}>{formatDate(post.data.published)}</time>
+      <a href={getPostUrl(post.id, post.filePath)}>{post.data.title}</a>
+    </li>
+  ))}
+</ul>

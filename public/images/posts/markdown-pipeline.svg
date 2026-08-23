@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" role="img" aria-labelledby="title">
+  <title id="title">Markdown to HTML pipeline diagram</title>
+  <rect width="600" height="200" fill="#f5f4ed" />
+  <g font-family="system-ui, sans-serif" font-size="20" text-anchor="middle">
+    <rect x="30" y="75" width="140" height="50" rx="4" fill="none" stroke="#141413" stroke-width="2" />
+    <text x="100" y="106" fill="#141413">Markdown</text>
+
+    <line x1="170" y1="100" x2="225" y2="100" stroke="#d97757" stroke-width="2" />
+    <polygon points="225,93 240,100 225,107" fill="#d97757" />
+
+    <rect x="240" y="75" width="120" height="50" rx="4" fill="none" stroke="#141413" stroke-width="2" />
+    <text x="300" y="106" fill="#141413">Build</text>
+
+    <line x1="360" y1="100" x2="415" y2="100" stroke="#d97757" stroke-width="2" />
+    <polygon points="415,93 430,100 415,107" fill="#d97757" />
+
+    <rect x="430" y="75" width="140" height="50" rx="4" fill="none" stroke="#141413" stroke-width="2" />
+    <text x="500" y="106" fill="#141413">HTML</text>
+  </g>
+</svg>

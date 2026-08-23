@@ -1,0 +1,16 @@
+---
+type Props = {
+  name: string;
+  url?: string;
+  avatar?: string;
+};
+
+const { name, url, avatar } = Astro.props;
+---
+
+<div class="author">
+  {avatar && <img src={avatar} alt={name} class="author-avatar" />}
+  <p>
+    {url && <> <a href={url}>{name}</a></>}
+  </p>
+</div>

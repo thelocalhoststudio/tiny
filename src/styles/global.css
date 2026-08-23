@@ -1,0 +1,108 @@
+:root {
+  --width: 800px;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-scale: 1em;
+  --background: #f5f4ed;
+  --foreground: #141413;
+  --primary: #d97757;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #141413;
+    --foreground: #f5f4ed;
+    --primary: #d97757;
+  }
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--font-scale);
+  margin: auto;
+  padding: 20px;
+  max-width: var(--width);
+  text-align: left;
+  background-color: var(--background);
+  overflow-wrap: break-word;
+  line-height: 1.5;
+  color: var(--foreground);
+}
+
+header { margin-bottom: 2rem;}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  color: var(--foreground);
+}
+
+a {
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+a:hover { text-decoration: underline; }
+nav { margin: 8px 0; }
+nav a { margin-right: 8px; }
+strong, b { color: var(--foreground); }
+main { line-height: 1.6; }
+table { width: 100%; }
+hr { border: 0; border-top: 1px solid; }
+img { max-width: 100%; }
+
+.meta { opacity: 0.7; font-size: 0.9em; }
+.meta a { margin-right: 8px; }
+
+.post-list { list-style: none; padding: unset; }
+.post-list li { display: flex; gap: 12px; align-items: center; padding: 0 0 2px; }
+.post-list time {
+  flex: 0 0 auto;
+  width: 12ch;
+  font-family: monospace;
+  font-size: 1.10em;
+  opacity: 0.7;
+}
+
+.browse-list { list-style: none; padding: 0; }
+.browse-list li { display: flex; gap: 12px; align-items: center; }
+
+.author { display: flex; align-items: center; gap: 12px; text-align: left; margin: 1.5rem 0; }
+.author-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; }
+
+pre { overflow-x: auto; }
+code {
+  font-family: monospace;
+  padding: 2px;
+}
+
+pre > code {
+  display: block;
+  padding: 20px;
+}
+
+blockquote {
+  border-inline-start: 2px solid color-mix(
+    in oklch,
+    var(--primary) 60%,
+    var(--background)
+  );
+  padding-left: 20px;
+  font-style: italic;
+}
+
+footer { padding: 25px 0; text-align: left; }
+.title:hover { text-decoration: none; }
+.title h1 { font-size: 1.5em; }
+
+.footnotes { font-size: 0.9em; }
+.footnotes .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

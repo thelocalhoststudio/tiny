@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="title">
+  <title id="title">Illustration of a desk with a laptop, notebook, and cup of coffee</title>
+  <rect width="800" height="450" fill="#141413" />
+  <rect x="0" y="330" width="800" height="120" fill="#2a2a27" />
+
+  <!-- laptop -->
+  <rect x="230" y="220" width="260" height="150" rx="6" fill="#f5f4ed" />
+  <rect x="248" y="236" width="224" height="118" fill="#141413" />
+  <rect x="200" y="368" width="320" height="14" rx="4" fill="#f5f4ed" />
+
+  <!-- notebook -->
+  <rect x="560" y="300" width="140" height="100" rx="4" fill="#f5f4ed" transform="rotate(-6 630 350)" />
+  <line x1="580" y1="320" x2="670" y2="316" stroke="#d97757" stroke-width="3" transform="rotate(-6 630 350)" />
+  <line x1="580" y1="336" x2="670" y2="332" stroke="#d97757" stroke-width="3" transform="rotate(-6 630 350)" />
+  <line x1="580" y1="352" x2="650" y2="349" stroke="#d97757" stroke-width="3" transform="rotate(-6 630 350)" />
+
+  <!-- coffee cup -->
+  <rect x="120" y="330" width="60" height="60" rx="8" fill="#d97757" />
+  <ellipse cx="150" cy="330" rx="30" ry="8" fill="#f5f4ed" opacity="0.3" />
+  <path d="M180 345 q25 0 25 20 q0 20 -25 20" fill="none" stroke="#d97757" stroke-width="6" />
+</svg>

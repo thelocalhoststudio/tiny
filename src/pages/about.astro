@@ -1,0 +1,24 @@
+---
+import { getEntry, render } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import AuthorBlock from "@/components/AuthorBlock.astro";
+import { getConfig } from "@/utils/config";
+
+const page = await getEntry("pages", "about");
+if (!page) throw new Error("Missing src/content/pages/about.md");
+
+const { Content } = await render(page);
+const siteConfig = await getConfig();
+---
+
+<Base title={page.data.title} description={page.data.description}>
+  <article>
+    <h1>{page.data.title}</h1>
+    <AuthorBlock
+      name={siteConfig.author.name}
+      url={siteConfig.author.url}
+      avatar={siteConfig.author.avatar}
+    />
+    <Content />
+  </article>
+</Base>

@@ -1,0 +1,27 @@
+---
+import { formatDate } from "@/utils/text";
+
+type Props = {
+  title: string;
+  description?: string;
+  published?: Date;
+  updated?: Date;
+};
+
+const { title, description, published, updated } = Astro.props;
+---
+
+<header class="content-header">
+  <h1 class="title">{title}</h1>
+  <!-- {description && <p>{description}</p>} -->
+  {(published || updated) && (
+    <p class="meta">
+      {published && <time datetime={published.toISOString()}>{formatDate(published)}</time>}
+      {updated && (
+        <>
+          {" "} last updated <time datetime={updated.toISOString()}>{formatDate(updated)}</time>
+        </>
+      )}
+    </p>
+  )}
+</header>

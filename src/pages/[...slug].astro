@@ -1,0 +1,28 @@
+---
+import { render } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import ContentHeader from "@/components/ContentHeader.astro";
+import { getAllPages, getPageSlugPath } from "@/utils/content";
+
+export async function getStaticPaths() {
+  // "about" has its own dedicated route (src/pages/about.astro) so it can
+  // render an author block; exclude it here to avoid a duplicate route.
+  const pages = (await getAllPages()).filter((page) => page.id !== "about");
+
+  return pages.map((page) => ({
+    params: { slug: getPageSlugPath(page.id, page.filePath) },
+    props: { page },
+  }));
+}
+
+const { page } = Astro.props;
+const { Content } = await render(page);
+const { title, description, updated } = page.data;
+---
+
+<Base title={title} description={description}>
+  <article>
+    <ContentHeader title={title} description={description} updated={updated} />
+    <Content />
+  </article>
+</Base>

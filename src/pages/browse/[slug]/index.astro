@@ -1,0 +1,30 @@
+---
+import Base from "@/layouts/Base.astro";
+import { getAllPosts } from "@/utils/content";
+import { getBrowseValues, getBrowseDimensions } from "@/utils/browse";
+
+export async function getStaticPaths() {
+  const dimensions = await getBrowseDimensions();
+
+  return dimensions.map((dimension) => ({
+    params: { slug: dimension.slug },
+    props: { dimension },
+  }));
+}
+
+const { dimension } = Astro.props;
+const posts = await getAllPosts();
+const values = getBrowseValues(posts, dimension.key);
+---
+
+<Base title={dimension.label} description={`Browse posts by ${dimension.label.toLowerCase()}.`}>
+  <h2>{dimension.label}</h2>
+  <ul class="browse-list">
+    {values.map((value) => (
+      <li>
+        <a href={`/browse/${dimension.slug}/${value.slug}`}>{value.value}</a>
+        <span class="meta">{value.count} {value.count === 1 ? "article" : "articles"}</span>
+      </li>
+    ))}
+  </ul>
+</Base>

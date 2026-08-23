@@ -1,0 +1,27 @@
+---
+import Base from "@/layouts/Base.astro";
+import PostList from "@/components/PostList.astro";
+import { getAllPosts } from "@/utils/content";
+import { getBrowseValues, filterBrowseEntries, getBrowseDimensions } from "@/utils/browse";
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts();
+  const dimensions = await getBrowseDimensions();
+
+  return dimensions.flatMap((dimension) =>
+    getBrowseValues(posts, dimension.key).map((value) => ({
+      params: { slug: dimension.slug, value: value.slug },
+      props: { dimension, value },
+    })),
+  );
+}
+
+const { dimension, value } = Astro.props;
+const posts = await getAllPosts();
+const filtered = filterBrowseEntries(posts, dimension.key, value.slug);
+---
+
+<Base title={value.value} description={`Posts filed under ${dimension.label.toLowerCase()}: ${value.value}.`}>
+  <h2>{value.value}</h2>
+  <PostList posts={filtered} />
+</Base>

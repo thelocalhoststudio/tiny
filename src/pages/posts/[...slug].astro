@@ -1,0 +1,41 @@
+---
+import { render } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import ContentHeader from "@/components/ContentHeader.astro";
+import { getAllPosts, getPostSlugPath } from "@/utils/content";
+import { slugify } from "@/utils/text";
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts();
+
+  return posts.map((post) => ({
+    params: { slug: getPostSlugPath(post.id, post.filePath) },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const { title, description, published, updated, tags } = post.data;
+
+const tagLinks = tags.map((tag) => ({
+  label: tag,
+  href: `/browse/tags/${slugify(tag)}`,
+}));
+---
+
+<Base title={title} description={description} type="article">
+  <article>
+    <ContentHeader
+      title={title}
+      published={published}
+      updated={updated}
+    />
+    <Content />
+    {tagLinks.length > 0 && (
+      <p class="meta">
+        {tagLinks.map((tag) => <a href={tag.href}>{tag.label}</a>)}
+      </p>
+    )}
+  </article>
+</Base>

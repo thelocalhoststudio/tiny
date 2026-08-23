@@ -1,0 +1,15 @@
+---
+import Base from "@/layouts/Base.astro";
+import { getBrowseDimensions } from "@/utils/browse";
+
+const dimensions = await getBrowseDimensions();
+---
+
+<Base title="Browse" description="Browse posts by tag, year, and topic.">
+  <h2>Browse Articles By</h2>
+  <ul class="browse-list">
+    {dimensions.map((dimension) => (
+      <li><a href={`/browse/${dimension.slug}`}>{dimension.label}</a></li>
+    ))}
+  </ul>
+</Base>

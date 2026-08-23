@@ -1,0 +1,22 @@
+---
+import { getConfig } from "@/utils/config";
+
+const siteConfig = await getConfig();
+const hasSocialLinks = (siteConfig.socialLinks?.length ?? 0) > 0;
+const hasFooterLinks = (siteConfig.footerLinks?.length ?? 0) > 0;
+---
+
+<fooer>
+  {hasSocialLinks && (
+    <p class="meta">
+      {siteConfig.socialLinks!.map((link) => <a href={link.url}>{link.label}</a>)}
+    </p>
+  )}
+  {(siteConfig.footerCredits || hasFooterLinks) && (
+    <p class="meta">
+      {siteConfig.footerCredits}
+      {siteConfig.footerCredits && hasFooterLinks && " · "}
+      {siteConfig.footerLinks?.map((link) => <a href={link.url}>{link.label}</a>)}
+    </p>
+  )}
+</footer>
