@@ -6,7 +6,7 @@ const dimensions = await getBrowseDimensions();
 ---
 
 <Base title="Browse" description="Browse posts by tag, year, and topic.">
-  <h2>Browse Articles By</h2>
+  <h1>Browse Articles By</h1>
   <ul class="browse-list">
     {dimensions.map((dimension) => (
       <li><a href={`/browse/${dimension.slug}`}>{dimension.label}</a></li>
