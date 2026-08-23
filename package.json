@@ -1,7 +1,8 @@
 {
-  "name": "bear-blog",
+  "name": "tiny",
+  "description": "A tiny publishing theme for Astro.",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "node": ">=22.12.0"
   },

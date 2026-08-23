@@ -1,8 +1,8 @@
 import type { UserConfig } from '@/types'
 
 export const defaultConfig: UserConfig = {
-  title:       'A Tiny Bear',
-  description: 'A tiny Astro theme for people who want a website, not a web application',
+  title:       'Tiny',
+  description: 'A tiny publishing theme for Astro.',
   locale:      'en',
 
   author: {

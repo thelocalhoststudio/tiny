@@ -3,7 +3,8 @@ title: Colophon
 description: How this site is built.
 ---
 
-Field Notes is intentionally simple, both to write for and to read.
+Field Notes is intentionally simple, both to write for and to read. It runs
+on Tiny, a tiny publishing theme for Astro.
 
 - Built with [Astro](https://astro.build), generated fully at build time
 - Content is Markdown and MDX, stored as plain files

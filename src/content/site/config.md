@@ -25,7 +25,7 @@ socialLinks:
     url: https://mastodon.social/@fieldnotes
   - label: GitHub
     url: https://github.com/fieldnotes
-footerCredits: Built with Astro
+footerCredits: Built with Tiny
 browse:
   dimensions:
     - key: tags
