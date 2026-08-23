@@ -10,13 +10,19 @@
     "dev": "astro dev --host",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "deploy": "pnpm build && wrangler deploy",
+    "cf:dev": "pnpm build && wrangler dev"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.3.7",
     "@astrojs/mdx": "^7.0.7",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.3",
-    "astro": "^7.2.4"
+    "astro": "^7.2.4",
+    "sharp": "^0.35.3"
+  },
+  "devDependencies": {
+    "wrangler": "^4.125.0"
   }
 }
