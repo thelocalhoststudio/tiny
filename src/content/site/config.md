@@ -1,7 +1,6 @@
 ---
 title: Field Notes
 description: A small independent space for notes, essays, and experiments.
-url: https://fieldnotes.example
 locale: en
 author:
   name: John Doe

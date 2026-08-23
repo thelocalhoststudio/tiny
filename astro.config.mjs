@@ -1,5 +1,4 @@
 // @ts-check
-import { readFileSync } from 'node:fs';
 import { defineConfig } from 'astro/config';
 import { satteri } from '@astrojs/markdown-satteri';
 import mdx from '@astrojs/mdx';
@@ -8,18 +7,16 @@ import sitemap from '@astrojs/sitemap';
 import { wikilinkResolver, directiveToHtml, obsidianTextFormatting } from './src/plugins/satteri.ts';
 import { resolveVaultImagePaths, imageAttributes, galleryGrouping } from './src/plugins/satteri-gallery.ts';
 
-
-// astro:content isn't available yet at config-load time, so the site URL is
-// read straight out of the siteConfig frontmatter instead of hardcoding it.
-const siteConfigMd = readFileSync(
-  new URL('./src/content/site/config.md', import.meta.url),
-  'utf-8',
-);
-const site = siteConfigMd.match(/^url:\s*['"]?([^'"\n]+)['"]?\s*$/m)?.[1];
+// astro:env isn't available yet at config-load time, so read .env directly.
+try {
+  process.loadEnvFile();
+} catch {
+  // no .env file — SITE_URL must already be set in the environment
+}
 
 // https://astro.build/config
 export default defineConfig({
-  site,
+  site: process.env.SITE_URL,
   experimental: {
     contentIntellisense: true,
   },

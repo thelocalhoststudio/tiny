@@ -51,7 +51,6 @@ const siteConfig = defineCollection({
   schema: z.object({
     title:       z.string().optional(),
     description: z.string().optional(),
-    url:         z.string().optional(),
     locale:      z.string().optional(),
     author:      z.object({
       name:    z.string(),

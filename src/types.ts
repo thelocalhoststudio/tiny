@@ -42,7 +42,6 @@ export interface UserConfig {
   // site identity
   title: string;
   description: string;
-  url: string;
   locale?: string;
 
   // author
