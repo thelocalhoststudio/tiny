@@ -1,10 +1,9 @@
-import { getCollection, type CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
 import { getAssetPath } from "./url";
 import { slugify } from "./text";
+import type { Post, Page } from "@/types";
 
 import { POSTS_PATH, PAGES_PATH } from "../content.config";
-export type Post = CollectionEntry<"posts">;
-export type Page = CollectionEntry<"pages">;
 
 let postsCache: Post[] | null = null;
 let pagesCache: Page[] | null = null;
@@ -119,19 +118,6 @@ export function getPostSlugPath(
 }
 
 /**
- * Route param slug used in getStaticPaths().
- *
- * Example:
- * "/travel/japan/tokyo"
- */
-export function getPostSlug(
-  id: string,
-  filePath?: string
-): string {
-  return `/${getPostSlugPath(id, filePath)}`;
-}
-
-/**
  * Full post URL.
  *
  * Example:
@@ -216,13 +202,6 @@ export function getPageSlugPath(
   return segments.length > 0
     ? [...segments, slug].join("/")
     : slug;
-}
-
-export function getPageSlug(
-  id: string,
-  filePath?: string
-): string {
-  return `/${getPageSlugPath(id, filePath)}`;
 }
 
 /**
