@@ -12,8 +12,6 @@ const siteConfig = await getConfig();
     <h1>{siteConfig.title}</h1>
   </a>
 
-  {siteConfig.description && <p>{siteConfig.description}</p>}
-
   {siteConfig.headerLinks && siteConfig.headerLinks.length > 0 && (
     <nav>
       {siteConfig.headerLinks.map((link) => <a href={link.url}>{link.label}</a>)}
