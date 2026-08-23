@@ -6,7 +6,7 @@ const hasSocialLinks = (siteConfig.socialLinks?.length ?? 0) > 0;
 const hasFooterLinks = (siteConfig.footerLinks?.length ?? 0) > 0;
 ---
 
-<fooer>
+<footer>
   {hasSocialLinks && (
     <p class="meta">
       {siteConfig.socialLinks!.map((link) => <a href={link.url}>{link.label}</a>)}

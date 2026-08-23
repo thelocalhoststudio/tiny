@@ -1,5 +1,4 @@
 // src/config/getConfig.ts
-// Merges user YAML config over default values.
 // Import this in layouts and pages — never import site.config.ts directly.
 
 import { getCollection } from 'astro:content'

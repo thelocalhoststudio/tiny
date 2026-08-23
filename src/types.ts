@@ -30,7 +30,6 @@ export interface BrowseDimension {
   /** URL segment. */
   slug: string;
 
-  sort?: "asc" | "desc";
 }
 
 export interface BrowseConfig {

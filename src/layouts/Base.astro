@@ -1,6 +1,6 @@
 ---
 import { getConfig } from "@/utils/config";
-import BeaseHead from "@/components/BeaseHead.astro";
+import BaseHead from "@/components/BaseHead.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import "@/styles/global.css";
@@ -18,7 +18,7 @@ const siteConfig = await getConfig();
 <!doctype html>
 <html lang={siteConfig.locale ?? "en"}>
   <head>
-    <BeaseHead title={title} description={description} type={type} />
+    <BaseHead title={title} description={description} type={type} />
   </head>
   <body>
     <Header />
