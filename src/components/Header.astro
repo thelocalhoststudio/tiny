@@ -5,8 +5,15 @@ const siteConfig = await getConfig();
 ---
 
 <header>
-  <a href="/" class="title"><h1>{siteConfig.title}</h1></a>
+  <a href="/" class="title">
+    {siteConfig.author.avatar && (
+      <img src={siteConfig.author.avatar} alt="" class="title-avatar" />
+    )}
+    <h1>{siteConfig.title}</h1>
+  </a>
+
   {siteConfig.description && <p>{siteConfig.description}</p>}
+
   {siteConfig.headerLinks && siteConfig.headerLinks.length > 0 && (
     <nav>
       {siteConfig.headerLinks.map((link) => <a href={link.url}>{link.label}</a>)}
