@@ -27,7 +27,7 @@ const posts = defineCollection({
     draft: z.boolean().default(false),
     tags: z
       .array(z.string().regex(
-        /^[a-zA-Z]+$/,
+        /^[a-zA-Z]+(?:-[a-zA-Z]+)*$/,
         "Tags must contain only letters.",
       ))
       .transform(removeDupsAndLowerCase)
