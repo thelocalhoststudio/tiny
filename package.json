@@ -15,14 +15,21 @@
     "cf:dev": "pnpm build && wrangler dev"
   },
   "dependencies": {
-    "@astrojs/markdown-satteri": "^0.3.7",
-    "@astrojs/mdx": "^7.0.7",
+    "@astrojs/markdown-satteri": "^0.4.0",
+    "@astrojs/mdx": "^8.0.0",
     "@astrojs/rss": "^4.0.19",
-    "@astrojs/sitemap": "^3.7.3",
-    "astro": "^7.2.4",
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.3.1",
     "sharp": "^0.35.3"
   },
   "devDependencies": {
     "wrangler": "^4.125.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "workerd"
+    ]
   }
 }
