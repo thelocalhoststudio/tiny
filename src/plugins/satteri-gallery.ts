@@ -83,21 +83,108 @@ function collectImages(node: Element): Element[] {
   );
 }
 
-function galleryItem(img: Element): Element {
+function galleryItem(img: Element, id: string): Element {
   return {
     type: 'element',
     tagName: 'div',
     properties: { class: 'gallery-item' },
-    children: [{ ...img, properties: { ...img.properties, class: 'gallery-item__image' } }],
+    children: [
+      {
+        type: 'element',
+        tagName: 'a',
+        properties: {
+          href: `#${id}`,
+          class: 'gallery-item__link',
+          'aria-label': 'Open image in lightbox',
+        },
+        children: [{ ...img, properties: { ...img.properties, class: 'gallery-item__image' } }],
+      },
+    ],
   };
 }
 
-function galleryDiv(images: Element[]): Element {
+function lightboxSlide(img: Element, id: string): Element {
+  const props = img.properties ?? {};
+  const captionText = (props['data-caption'] || props.title || props.alt) as string | undefined;
+
+  const children: ElementContent[] = [
+    {
+      type: 'element',
+      tagName: 'a',
+      properties: {
+        href: '#!',
+        class: 'gallery-lightbox__close-area',
+        'aria-label': 'Close lightbox',
+      },
+      children: [],
+    },
+    {
+      ...img,
+      properties: {
+        ...img.properties,
+        class: 'gallery-lightbox__image',
+        loading: 'lazy',
+      },
+    },
+  ];
+
+  if (captionText && typeof captionText === 'string' && captionText.trim() !== '') {
+    children.push({
+      type: 'element',
+      tagName: 'span',
+      properties: { class: 'gallery-lightbox__caption' },
+      children: [{ type: 'text', value: captionText }],
+    });
+  }
+
   return {
     type: 'element',
     tagName: 'div',
-    properties: { class: images.length === 1 ? 'gallery-single' : 'gallery-grid' },
-    children: images.map(galleryItem) as ElementContent[],
+    properties: { class: 'gallery-lightbox__slide', id },
+    children,
+  };
+}
+
+function lightboxContainer(images: Element[], galleryId: string): Element {
+  return {
+    type: 'element',
+    tagName: 'div',
+    properties: { class: 'gallery-lightbox' },
+    children: [
+      {
+        type: 'element',
+        tagName: 'a',
+        properties: {
+          href: '#!',
+          class: 'gallery-lightbox__close',
+          'aria-label': 'Close lightbox',
+        },
+        children: [{ type: 'text', value: '×' }],
+      },
+      {
+        type: 'element',
+        tagName: 'div',
+        properties: { class: 'gallery-lightbox__track' },
+        children: images.map((img, i) =>
+          lightboxSlide(img, `${galleryId}-img-${i + 1}`)
+        ) as ElementContent[],
+      },
+    ],
+  };
+}
+
+function galleryDiv(images: Element[], galleryId: string): Element {
+  const isSingle = images.length === 1;
+  const items: ElementContent[] = images.map((img, i) =>
+    galleryItem(img, `${galleryId}-img-${i + 1}`)
+  );
+  items.push(lightboxContainer(images, galleryId));
+
+  return {
+    type: 'element',
+    tagName: 'div',
+    properties: { class: isSingle ? 'gallery-single' : 'gallery-grid' },
+    children: items,
   };
 }
 
@@ -107,6 +194,7 @@ function galleryDiv(images: Element[]): Element {
 // gets its own visit() call and must be told to no-op.
 export function galleryGrouping() {
   const consumedIndices = new WeakMap<object, Set<number>>();
+  let galleryCounter = 0;
 
   return {
     name: 'gallery-grouping',
@@ -144,7 +232,8 @@ export function galleryGrouping() {
         const images = group.flatMap((idx) => collectImages(parent.children[idx] as Element));
         for (const idx of group.slice(1)) ctx.removeNode(parent.children[idx]);
 
-        return galleryDiv(images);
+        galleryCounter++;
+        return galleryDiv(images, `g${galleryCounter}`);
       },
     },
   };

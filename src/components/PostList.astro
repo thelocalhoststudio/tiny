@@ -1,19 +1,22 @@
 ---
 import type { Post } from "@/types";
 import { getPostUrl } from "@/utils/content";
-import { formatDate } from "@/utils/text";
+import { formatDate, formatShortDate } from "@/utils/text";
 
 type Props = {
   posts: Post[];
+  showYear?: boolean;
 };
 
-const { posts } = Astro.props;
+const { posts, showYear = true } = Astro.props;
 ---
 
-<ul class="post-list">
+<ul class:list={["post-list", { "post-list--with-year": showYear }]}>
   {posts.map((post) => (
     <li>
-      <time datetime={post.data.published.toISOString()}>{formatDate(post.data.published)}</time>
+      <time datetime={post.data.published.toISOString()}>
+        {showYear ? formatDate(post.data.published) : formatShortDate(post.data.published)}
+      </time>
       <a href={getPostUrl(post.id, post.filePath)}>{post.data.title}</a>
     </li>
   ))}

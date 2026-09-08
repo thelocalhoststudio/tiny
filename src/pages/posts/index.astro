@@ -9,10 +9,25 @@ const grouped = getPostsGroupedByYear(posts);
 
 <Base title="Posts" description="All posts, newest first.">
   <h1>Posts</h1>
+
+  <nav class="year-nav meta" aria-label="Jump to year">
+    {grouped.map(([year], index) => (
+      <span>
+        <a href={`#${year}`}>{year}</a>
+        {index < grouped.length - 1 && <span aria-hidden="true"> · </span>}
+      </span>
+    ))}
+  </nav>
+
   {grouped.map(([year, yearPosts]) => (
     <section>
-      <h3>{year}</h3>
-      <PostList posts={yearPosts} />
+      <h3 id={year} class="year-heading">
+        <a href={`#${year}`}>
+          {year}
+          <span class="anchor-hash" aria-hidden="true">#</span>
+        </a>
+      </h3>
+      <PostList posts={yearPosts} showYear={false} />
     </section>
   ))}
 </Base>

@@ -3,7 +3,14 @@ export function formatDate(date: Date): string {
     day:   '2-digit',
     month: 'short',
     year:  'numeric',
-  })
+  }).replace('Sept', 'Sep');
+}
+
+export function formatShortDate(date: Date): string {
+  return date.toLocaleDateString('en-IN', {
+    day:   '2-digit',
+    month: 'short',
+  }).replace('Sept', 'Sep');
 }
 
 export function slugify(str?: string): string {
