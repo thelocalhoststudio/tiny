@@ -1,20 +1,58 @@
 ---
 import { getConfig } from "@/utils/config";
+import ThemeToggle from "@/components/ThemeToggle.astro";
 
 const siteConfig = await getConfig();
+const pathname = Astro.url.pathname;
+
+const searchAllowed = siteConfig.search?.enabled !== false && siteConfig.features?.search !== false;
+const themeEnabled = siteConfig.theme?.enabled !== false;
+
+const baseLinks = siteConfig.headerLinks ?? [
+  { label: 'Blog', url: '/posts' },
+  { label: 'Browse', url: '/browse' },
+  { label: 'Search', url: '/search' },
+  { label: 'About', url: '/about' },
+];
+
+// Respect search disablement or ensure search link is present if enabled
+let links = baseLinks;
+if (!searchAllowed) {
+  links = baseLinks.filter((l) => l.url !== '/search');
+} else {
+  const hasSearch = baseLinks.some((link) => link.url === '/search');
+  if (!hasSearch) {
+    links = [...baseLinks, { label: siteConfig.ui?.search || 'Search', url: '/search' }];
+  }
+}
 ---
 
-<header>
-  <a href="/" class="title">
-    {siteConfig.author.avatar && (
-      <img src={siteConfig.author.avatar} alt="" class="title-avatar" />
-    )}
-    <h1>{siteConfig.title}</h1>
-  </a>
+<header class="site-header">
+  <div class="site-header__top">
+    <a href="/" class="site-header__brand">
+      {siteConfig.author.avatar && (
+        <img src={siteConfig.author.avatar} alt="" class="site-header__avatar" />
+      )}
+      <span class="site-header__title">{siteConfig.title}</span>
+    </a>
 
-  {siteConfig.headerLinks && siteConfig.headerLinks.length > 0 && (
-    <nav>
-      {siteConfig.headerLinks.map((link) => <a href={link.url}>{link.label}</a>)}
+    {themeEnabled && (
+      <div class="site-header__tools">
+        <ThemeToggle />
+      </div>
+    )}
+  </div>
+
+  {links.length > 0 && (
+    <nav class="site-header__nav" aria-label="Main Navigation">
+      {links.map((link) => {
+        const isActive = pathname === link.url || (link.url !== '/' && pathname.startsWith(link.url));
+        return (
+          <a href={link.url} class={isActive ? "active" : undefined}>
+            {link.label}
+          </a>
+        );
+      })}
     </nav>
   )}
 </header>

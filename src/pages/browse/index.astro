@@ -1,15 +1,25 @@
 ---
 import Base from "@/layouts/Base.astro";
-import { getBrowseDimensions } from "@/utils/browse";
+import { getBrowseDimensions, getBrowseValues } from "@/utils/browse";
+import { getAllPosts } from "@/utils/content";
 
 const dimensions = await getBrowseDimensions();
+const posts = await getAllPosts();
 ---
 
-<Base title="Browse" description="Browse posts by tag, year, and topic.">
-  <h1>Browse Articles By</h1>
+<Base title="Browse" description="Browse all articles by tags, years, and custom dimensions.">
+  <h1>Browse</h1>
+  <p class="meta">Discover writing across structured dimensions.</p>
+
   <ul class="browse-list">
-    {dimensions.map((dimension) => (
-      <li><a href={`/browse/${dimension.slug}`}>{dimension.label}</a></li>
-    ))}
+    {dimensions.map((dimension) => {
+      const values = getBrowseValues(posts, dimension.key);
+      return (
+        <li>
+          <a href={`/browse/${dimension.slug}`}>{dimension.label}</a>
+          <span class="meta">{values.length} {values.length === 1 ? 'entry' : 'entries'}</span>
+        </li>
+      );
+    })}
   </ul>
 </Base>

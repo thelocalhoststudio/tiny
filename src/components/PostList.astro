@@ -1,23 +1,76 @@
 ---
 import type { Post } from "@/types";
-import { getPostUrl } from "@/utils/content";
-import { formatDate, formatShortDate } from "@/utils/text";
+import { getPostUrl, getInboundLinksIndex, getInboundLinksCount } from "@/utils/content";
+import { getBrowseDimensions } from "@/utils/browse";
+import { formatDate, formatShortDate, slugify } from "@/utils/text";
 
 type Props = {
   posts: Post[];
   showYear?: boolean;
+  showTags?: boolean;
+  showInboundCounts?: boolean;
 };
 
-const { posts, showYear = true } = Astro.props;
+const {
+  posts,
+  showYear = true,
+  showTags = false,
+  showInboundCounts = false,
+} = Astro.props;
+
+const inboundIndex = showInboundCounts ? await getInboundLinksIndex() : null;
+const dimensions = await getBrowseDimensions();
+const tagDimension = dimensions.find((d) =>
+  ["tags", "tag"].includes(d.key.toLowerCase()) ||
+  ["tags", "tag"].includes(d.slug.toLowerCase()),
+);
+const tagSlug = tagDimension?.slug || "tags";
+
+function getCount(post: Post): number {
+  if (!inboundIndex) return 0;
+  return getInboundLinksCount(post, inboundIndex);
+}
 ---
 
-<ul class:list={["post-list", { "post-list--with-year": showYear }]}>
-  {posts.map((post) => (
-    <li>
-      <time datetime={post.data.published.toISOString()}>
-        {showYear ? formatDate(post.data.published) : formatShortDate(post.data.published)}
-      </time>
-      <a href={getPostUrl(post.id, post.filePath)}>{post.data.title}</a>
-    </li>
-  ))}
+<ul class:list={["post-list", { "post-list--short": !showYear }]}>
+  {posts.map((post) => {
+    const inboundCount = showInboundCounts ? getCount(post) : 0;
+    const postTags = post.data.tags ?? [];
+    const postUrl = getPostUrl(post.id, post.filePath);
+    const hasTag = showTags && postTags.length > 0;
+    const hasInbound = showInboundCounts && inboundCount > 0;
+
+    return (
+      <li class="post-row">
+        <time datetime={post.data.published.toISOString()} class="post-row__date">
+          {showYear ? formatDate(post.data.published) : formatShortDate(post.data.published)}
+        </time>
+
+        <div class="post-row__title-wrap">
+          <a href={postUrl} class="post-row__title">
+            {post.data.title}
+          </a>
+        </div>
+
+        {(hasTag || hasInbound) && (
+          <div class="post-row__meta">
+            {hasTag && (
+              <a href={`/browse/${tagSlug}/${slugify(postTags[0])}`} class="post-row__tag">
+                #{postTags[0]}
+              </a>
+            )}
+            {hasInbound && (
+              <a
+                href={`${postUrl}#inbound-references`}
+                class="post-row__inbound"
+                title={`${inboundCount} inbound reference${inboundCount === 1 ? '' : 's'}`}
+              >
+                {inboundCount} {inboundCount === 1 ? 'link' : 'links'}
+              </a>
+            )}
+          </div>
+        )}
+      </li>
+    );
+  })}
 </ul>

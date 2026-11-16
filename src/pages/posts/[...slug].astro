@@ -2,7 +2,17 @@
 import { render } from "astro:content";
 import Base from "@/layouts/Base.astro";
 import ContentHeader from "@/components/ContentHeader.astro";
-import { getAllPosts, getPostSlugPath } from "@/utils/content";
+import TableOfContents from "@/components/TableOfContents.astro";
+import {
+  getAllPosts,
+  getPostSlugPath,
+  getPostUrl,
+  getPostStats,
+  getInboundLinks,
+  getAdjacentPosts,
+} from "@/utils/content";
+import { getPostBreadcrumbs } from "@/utils/browse";
+import { getConfig } from "@/utils/config";
 import { slugify } from "@/utils/text";
 
 export async function getStaticPaths() {
@@ -10,13 +20,21 @@ export async function getStaticPaths() {
 
   return posts.map((post) => ({
     params: { slug: getPostSlugPath(post.id, post.filePath) },
-    props: { post },
+    props: { post, allPosts: posts },
   }));
 }
 
-const { post } = Astro.props;
-const { Content } = await render(post);
-const { title, description, published, updated, tags } = post.data;
+const { post, allPosts } = Astro.props;
+const { Content, headings } = await render(post);
+const { title, description, published, updated, tags = [] } = post.data;
+
+const siteConfig = await getConfig();
+const stats = getPostStats(post);
+const showBacklinks = siteConfig.features?.backlinks !== false;
+const showToc = siteConfig.features?.toc !== false;
+const inboundPosts = showBacklinks ? await getInboundLinks(post) : [];
+const { prev, next } = getAdjacentPosts(post, allPosts);
+const breadcrumbs = getPostBreadcrumbs(post, siteConfig);
 
 const tagLinks = tags.map((tag) => ({
   label: tag,
@@ -24,18 +42,63 @@ const tagLinks = tags.map((tag) => ({
 }));
 ---
 
-<Base title={title} description={description} type="article" published={published} updated={updated}>
+<Base
+  title={title}
+  description={description}
+  type="article"
+  published={published}
+  updated={updated}
+>
   <article>
     <ContentHeader
       title={title}
+      description={description}
       published={published}
       updated={updated}
+      words={stats.words}
+      readingMinutes={stats.readingMinutes}
+      tags={tagLinks}
+      breadcrumbs={breadcrumbs}
+      inboundCount={showBacklinks ? inboundPosts.length : 0}
     />
-    <Content />
-    {tagLinks.length > 0 && (
-      <p class="meta">
-        {tagLinks.map((tag) => <a href={tag.href}>{tag.label}</a>)}
-      </p>
+
+    {showToc && <TableOfContents headings={headings} />}
+
+    <div class="content-body">
+      <Content />
+    </div>
+
+    {showBacklinks && inboundPosts.length > 0 && (
+      <section id="inbound-references" class="inbound-links">
+        <h3>{siteConfig.ui?.inboundReferences || "Inbound References"} ({inboundPosts.length})</h3>
+        <ul>
+          {inboundPosts.map((p) => (
+            <li>
+              <a href={getPostUrl(p.id, p.filePath)}>
+                {p.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {(prev || next) && (
+      <nav class="post-pagination" aria-label="Adjacent Posts">
+        {prev ? (
+          <div class="post-pagination__prev">
+            <span class="post-pagination__label">{siteConfig.ui?.newer ? `← ${siteConfig.ui.newer}` : "← Previous"}</span>
+            <a href={getPostUrl(prev.id, prev.filePath)}>{prev.data.title}</a>
+          </div>
+        ) : <div />}
+
+        {next ? (
+          <div class="post-pagination__next">
+            <span class="post-pagination__label">{siteConfig.ui?.older ? `${siteConfig.ui.older} →` : "Next →"}</span>
+            <a href={getPostUrl(next.id, next.filePath)}>{next.data.title}</a>
+          </div>
+        ) : <div />}
+      </nav>
     )}
   </article>
 </Base>

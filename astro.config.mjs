@@ -4,8 +4,22 @@ import { satteri } from '@astrojs/markdown-satteri';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
-import { wikilinkResolver, directiveToHtml, obsidianTextFormatting } from './src/plugins/satteri.ts';
-import { resolveVaultImagePaths, imageAttributes, galleryGrouping } from './src/plugins/satteri-gallery.ts';
+import {
+  wikilinkResolver,
+  directiveToHtml,
+  obsidianTextFormatting,
+  blockquoteAttribution,
+} from './src/plugins/satteri.ts';
+import {
+  resolveVaultImagePaths,
+  imageAttributes,
+  galleryGrouping,
+  imageCaption,
+} from './src/plugins/satteri-gallery.ts';
+import { sourceGutter } from './src/plugins/satteri-gutter.ts';
+import { math } from './src/plugins/satteri-math.ts';
+import { noteFileLinks } from './src/plugins/satteri-note-links.ts';
+import { callout } from './src/plugins/satteri-callout.ts';
 
 // astro:env isn't available yet at config-load time, so read .env directly.
 try {
@@ -25,16 +39,23 @@ export default defineConfig({
   markdown: {
     processor: satteri({
       mdastPlugins: [
+        callout,
+        math,
         directiveToHtml,
         obsidianTextFormatting,
         resolveVaultImagePaths,
+        noteFileLinks,
       ],
       hastPlugins: [
         wikilinkResolver,
         imageAttributes,
         galleryGrouping,
+        imageCaption,
+        blockquoteAttribution,
+        sourceGutter,
       ],
       features: {
+        math: true,
         wikilinks: true,
         directive: true,
         smartPunctuation: { quotes: true, dashes: true, ellipses: true },
@@ -43,11 +64,11 @@ export default defineConfig({
             label: "Footnotes",
             backContent: "↑",
             backLabel: "Back to reference {reference}",
-          }
+          },
         },
         subscript: true,
         superscript: true,
-      }
-    })
-  }
+      },
+    }),
+  },
 });

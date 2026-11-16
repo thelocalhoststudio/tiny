@@ -2,7 +2,9 @@
 import { render } from "astro:content";
 import Base from "@/layouts/Base.astro";
 import ContentHeader from "@/components/ContentHeader.astro";
+import TableOfContents from "@/components/TableOfContents.astro";
 import { getAllPages, getPageSlugPath } from "@/utils/content";
+import { countWords, readingMinutes } from "@/utils/text";
 
 export async function getStaticPaths() {
   // "about" has its own dedicated route (src/pages/about.astro) so it can
@@ -16,13 +18,25 @@ export async function getStaticPaths() {
 }
 
 const { page } = Astro.props;
-const { Content } = await render(page);
+const { Content, headings } = await render(page);
 const { title, description, updated } = page.data;
+
+const words = page.body ? countWords(page.body) : undefined;
+const readTime = words ? readingMinutes(words) : undefined;
 ---
 
 <Base title={title} description={description} updated={updated}>
   <article>
-    <ContentHeader title={title} description={description} updated={updated} />
-    <Content />
+    <ContentHeader
+      title={title}
+      description={description}
+      updated={updated}
+    />
+
+    <TableOfContents headings={headings} />
+
+    <div class="content-body">
+      <Content />
+    </div>
   </article>
 </Base>

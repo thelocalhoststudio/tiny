@@ -38,4 +38,5 @@ publishing on it. Some will be short, some longer, and a few will wander off
 topic entirely — that's allowed on a personal site.
 
 If you're curious how the site itself works, the [colophon](/colophon) has
-the details.
+the details, or read [[On Intentional Software]] and [[tools-we-shape|Tools We Shape and Tools That Shape Us]]
+for the philosophy behind the build.

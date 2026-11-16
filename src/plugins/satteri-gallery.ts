@@ -1,12 +1,14 @@
 /**
- * Sätteri plugins for inline body images.
+ * Sätteri plugins for inline body images and galleries.
  *
  * resolveVaultImagePaths — normalizes Obsidian vault-absolute image paths
  *   (mdast, runs before Astro's built-in image collector).
  * imageAttributes        — lazy loading + title-as-caption (hast).
  * galleryGrouping         — merges consecutive image-only paragraphs into a
  *   `.gallery-single`/`.gallery-grid` div of `.gallery-item` images (hast),
- *   for GalleryLightbox to attach to.
+ *   for pure CSS lightbox to attach to.
+ * imageCaption           — adds `.editorial-caption` to italicized caption paragraphs
+ *   immediately following an image or gallery.
  */
 
 import { fileURLToPath } from 'node:url';
@@ -14,10 +16,6 @@ import { posix as pathPosix } from 'node:path';
 import type { Element, ElementContent, Text as HastText } from 'hast';
 
 // ── MDAST plugin: normalize vault-absolute image paths ───────────────────────
-// Handles both flat collections (src/content/posts/*.md + a shared
-// posts/attachments/) and nested, one-directory-per-entry posts
-// (src/content/posts/_travels/.../<slug>/attachments/) by resolving the
-// vault-absolute URL relative to the current file's own directory.
 function resolveVaultImageUrl(url: string, fileURL: URL | undefined): string {
   if (/^https?:\/\//.test(url)) return url;
   if (url.startsWith('/') || url.startsWith('./') || url.startsWith('../')) return url;
@@ -73,13 +71,13 @@ function isImageOnlyParagraph(node: Element): boolean {
   return node.children.every(
     (child) =>
       (child.type === 'element' && child.tagName === 'img') ||
-      (child.type === 'text' && (child as HastText).value.trim() === '')
+      (child.type === 'text' && (child as HastText).value.trim() === ''),
   );
 }
 
 function collectImages(node: Element): Element[] {
   return node.children.filter(
-    (child): child is Element => child.type === 'element' && child.tagName === 'img'
+    (child): child is Element => child.type === 'element' && child.tagName === 'img',
   );
 }
 
@@ -166,7 +164,7 @@ function lightboxContainer(images: Element[], galleryId: string): Element {
         tagName: 'div',
         properties: { class: 'gallery-lightbox__track' },
         children: images.map((img, i) =>
-          lightboxSlide(img, `${galleryId}-img-${i + 1}`)
+          lightboxSlide(img, `${galleryId}-img-${i + 1}`),
         ) as ElementContent[],
       },
     ],
@@ -176,22 +174,21 @@ function lightboxContainer(images: Element[], galleryId: string): Element {
 function galleryDiv(images: Element[], galleryId: string): Element {
   const isSingle = images.length === 1;
   const items: ElementContent[] = images.map((img, i) =>
-    galleryItem(img, `${galleryId}-img-${i + 1}`)
+    galleryItem(img, `${galleryId}-img-${i + 1}`),
   );
   items.push(lightboxContainer(images, galleryId));
 
   return {
     type: 'element',
     tagName: 'div',
-    properties: { class: isSingle ? 'gallery-single' : 'gallery-grid' },
+    properties: {
+      class: isSingle ? 'gallery-single' : 'gallery-grid',
+      dataMd: '![]',
+    },
     children: items,
   };
 }
 
-// A factory (not a shared object) so the consumed-index bookkeeping resets
-// per document — Sätteri dispatches every matched `p` from a single upfront
-// scan, so a later sibling already folded into an earlier group's div still
-// gets its own visit() call and must be told to no-op.
 export function galleryGrouping() {
   const consumedIndices = new WeakMap<object, Set<number>>();
   let galleryCounter = 0;
@@ -238,3 +235,57 @@ export function galleryGrouping() {
     },
   };
 }
+
+// ── HAST plugin: image caption ───────────────────────────────────────────────
+function isEmphasisOnlyParagraph(node: Element): boolean {
+  if (node.tagName !== 'p') return false;
+  const nonWhitespace = (node.children || []).filter(
+    (c) => !(c.type === 'text' && (c as HastText).value.trim() === ''),
+  );
+  return (
+    nonWhitespace.length === 1 &&
+    nonWhitespace[0].type === 'element' &&
+    (nonWhitespace[0] as Element).tagName === 'em'
+  );
+}
+
+export const imageCaption = {
+  name: 'image-caption',
+  element: {
+    filter: ['p'],
+    visit(node: Element, ctx: any) {
+      if (!isEmphasisOnlyParagraph(node)) return;
+      const parent = ctx.parent(node);
+      const index = ctx.indexOf(node);
+      if (!parent || index === undefined || index === 0) return;
+
+      let prevIdx = index - 1;
+      while (
+        prevIdx >= 0 &&
+        parent.children[prevIdx].type === 'text' &&
+        (parent.children[prevIdx] as HastText).value.trim() === ''
+      ) {
+        prevIdx--;
+      }
+      if (prevIdx < 0) return;
+      const prev = parent.children[prevIdx];
+      if (prev.type === 'element') {
+        const classes = Array.isArray(prev.properties?.className)
+          ? prev.properties.className.join(' ')
+          : String(prev.properties?.class || '');
+        const isGallery =
+          prev.tagName === 'div' &&
+          (classes.includes('gallery-single') || classes.includes('gallery-grid'));
+        const isImgP =
+          prev.tagName === 'p' &&
+          prev.children.some((c: any) => c.type === 'element' && c.tagName === 'img');
+        if (isGallery || isImgP) {
+          const existing = Array.isArray(node.properties?.className)
+            ? node.properties.className
+            : [];
+          ctx.setProperty(node, 'className', [...existing, 'editorial-caption']);
+        }
+      }
+    },
+  },
+};

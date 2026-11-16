@@ -1,0 +1,53 @@
+---
+/**
+ * Minimal theme switcher supporting Light, Dark, and System modes.
+ * Keep theme switching as the only planned global JavaScript exception.
+ */
+---
+
+<button
+  type="button"
+  id="theme-toggle"
+  class="theme-toggle"
+  aria-label="Toggle theme mode"
+  title="Switch theme (system, light, dark)"
+>
+  <span id="theme-toggle-label">theme</span>
+</button>
+
+<script is:inline>
+  (function () {
+    const toggle = document.getElementById('theme-toggle');
+    const label = document.getElementById('theme-toggle-label');
+    if (!toggle || !label) return;
+
+    const modes = ['system', 'light', 'dark'];
+
+    function getSavedTheme() {
+      return localStorage.getItem('theme') || 'system';
+    }
+
+    function applyTheme(theme) {
+      if (theme === 'system') {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.removeItem('theme');
+        label.textContent = 'auto';
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        label.textContent = theme;
+      }
+    }
+
+    // Initialize button label
+    const initial = getSavedTheme();
+    label.textContent = initial === 'system' ? 'auto' : initial;
+
+    toggle.addEventListener('click', () => {
+      const current = getSavedTheme();
+      const nextIndex = (modes.indexOf(current) + 1) % modes.length;
+      const nextTheme = modes[nextIndex];
+      applyTheme(nextTheme);
+    });
+  })();
+</script>

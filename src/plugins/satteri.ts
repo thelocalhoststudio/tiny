@@ -1,18 +1,14 @@
 /**
- * Sätteri MDAST/HAST plugins.
+ * Sätteri MDAST and HAST plugins for Tiny.
  *
- * wikilinkResolver — converts wikilink hrefs (raw title, URL-encoded) to
- *   /posts/slug paths, since Sätteri's `wikilinks: true` feature parses
- *   `[[...]]` into an anchor tag but leaves the href as the raw title.
- * directiveToHtml  — converts :::aside and :::annotation container directives to HTML divs.
- *
- * Both run as hastPlugins / mdastPlugins on the Sätteri processor.
+ * wikilinkResolver       — converts wikilink hrefs to /posts/<slug> paths.
+ * directiveToHtml        — converts :::aside and :::annotation container directives to HTML.
+ * obsidianTextFormatting — ==highlights==, ++underlines++, and %%comments%%.
+ * blockquoteAttribution  — styles em-dash attributions in blockquotes.
  */
-
-import { slugify } from '../utils/text';
+import { slugify } from '../utils/text.ts';
 
 // ── HAST plugin: resolve wikilink hrefs ──────────────────────────────────────
-// element visitor requires { filter, visit } shape per Sätteri HastFilteredVisitor API
 export const wikilinkResolver = {
   name: 'wikilink-resolver',
   element: {
@@ -20,46 +16,55 @@ export const wikilinkResolver = {
     visit(node: any, ctx: any) {
       const href = node.properties?.href as string | undefined;
       if (!href) return;
-      // Skip absolute URLs, root-relative paths, mailto
+
+      // Skip external URLs, root-relative paths, and mailto
       if (
-        href.startsWith('http') ||
+        href.startsWith('http://') ||
+        href.startsWith('https://') ||
         href.startsWith('/') ||
-        href.startsWith('mailto')
-      ) return;
-      // Bare same-page anchor: [[#Heading]] — lowercase/slug to match the
-      // auto-generated heading id, but don't prefix a page path.
+        href.startsWith('mailto:')
+      ) {
+        return;
+      }
+
+      // Bare same-page anchor: [[#Heading]] -> #heading
       if (href.startsWith('#')) {
         ctx.setProperty(node, 'href', `#${slugify(decodeURIComponent(href.slice(1)))}`);
         return;
       }
-      // Sätteri emits wikilink href as raw URL-encoded title, optionally
-      // carrying a #Heading suffix verbatim — split before slugifying so
-      // the page and heading don't get merged into one slug.
+
+      // Sätteri emits wikilink href as raw URL-encoded title, optionally with #Heading suffix
       const decoded = decodeURIComponent(href);
       const hashIndex = decoded.indexOf('#');
       const page = hashIndex === -1 ? decoded : decoded.slice(0, hashIndex);
       const heading = hashIndex === -1 ? '' : decoded.slice(hashIndex + 1);
       const slug = slugify(page);
       const anchor = heading ? `#${slugify(heading)}` : '';
+
       ctx.setProperty(node, 'href', `/posts/${slug}${anchor}`);
     },
   },
 };
 
-// ── Text extraction from MDAST child nodes ────────────────────────────────────
+// ── Text extraction helper ───────────────────────────────────────────────────
 function extractHtml(node: any): string {
   if (!node) return '';
   switch (node.type) {
-    case 'text':       return escapeHtml(node.value ?? '');
-    case 'emphasis':   return `<em>${(node.children ?? []).map(extractHtml).join('')}</em>`;
-    case 'strong':     return `<strong>${(node.children ?? []).map(extractHtml).join('')}</strong>`;
-    case 'inlineCode': return `<code>${escapeHtml(node.value ?? '')}</code>`;
+    case 'text':
+      return escapeHtml(node.value ?? '');
+    case 'emphasis':
+      return `<em>${(node.children ?? []).map(extractHtml).join('')}</em>`;
+    case 'strong':
+      return `<strong>${(node.children ?? []).map(extractHtml).join('')}</strong>`;
+    case 'inlineCode':
+      return `<code>${escapeHtml(node.value ?? '')}</code>`;
     case 'link': {
       const href = escapeAttr(node.url ?? '');
       const text = (node.children ?? []).map(extractHtml).join('');
       return `<a href="${href}">${text}</a>`;
     }
-    case 'paragraph':  return `<p>${(node.children ?? []).map(extractHtml).join('')}</p>`;
+    case 'paragraph':
+      return `<p>${(node.children ?? []).map(extractHtml).join('')}</p>`;
     default:
       if (Array.isArray(node.children)) return node.children.map(extractHtml).join('');
       return '';
@@ -74,46 +79,57 @@ function escapeAttr(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
 
-// ── MDAST plugin: Obsidian text formatting ───────────────────────────────────
-// Wikilinks and image embeds are handled natively by Sätteri's `wikilinks`
-// feature; only comments and highlights need porting from remark-obsidian.ts.
+// ── MDAST plugin: Obsidian text formatting & Underlines ──────────────────────
+const FORMAT_REGEX = /(?<=^|[\s\p{P}\p{S}])(?:==([^\s=](?:[\s\S]*?[^\s=])?)==|\+\+([^\s\+](?:[\s\S]*?[^\s\+])?)\+\+)(?=[\s\p{P}\p{S}]|$)/gu;
+
+export function splitMarks(value: string): any[] | null {
+  const stripped = value.replace(/%%[\s\S]*?%%/g, '');
+  const out: any[] = [];
+  let last = 0;
+
+  for (const m of stripped.matchAll(FORMAT_REGEX)) {
+    if (m.index > last) {
+      out.push({ type: 'text', value: stripped.slice(last, m.index) });
+    }
+
+    const isHighlight = m[1] !== undefined;
+    const content = isHighlight ? m[1] : m[2];
+    const innerChildren = splitMarks(content) ?? [{ type: 'text', value: content }];
+
+    out.push({
+      type: 'emphasis',
+      data: isHighlight
+        ? { hName: 'mark', hProperties: { className: ['editorial-highlight'] } }
+        : { hName: 'span', hProperties: { className: ['editorial-underline'] } },
+      children: innerChildren,
+    });
+
+    last = m.index + m[0].length;
+  }
+
+  if (last === 0) {
+    if (stripped !== value) return [{ type: 'text', value: stripped }];
+    return null;
+  }
+
+  if (last < stripped.length) {
+    out.push({ type: 'text', value: stripped.slice(last) });
+  }
+
+  return out;
+}
+
 export const obsidianTextFormatting = {
   name: 'obsidian-text-formatting',
   text(node: any, ctx: any) {
-    const value: string = node.value ?? '';
-    const stripped = value.replace(/%%[\s\S]*?%%/g, '');
-
-    const highlightRegex = /==(.+?)==/g;
-    if (!highlightRegex.test(stripped)) {
-      if (stripped !== value) ctx.setProperty(node, 'value', stripped);
-      return;
+    const parts = splitMarks(node.value ?? '');
+    if (parts) {
+      ctx.replaceNode(node, parts);
     }
-
-    const segments: Array<{ type: string; value: string }> = [];
-    let lastIndex = 0;
-    highlightRegex.lastIndex = 0;
-    let match: RegExpExecArray | null;
-    while ((match = highlightRegex.exec(stripped)) !== null) {
-      if (match.index > lastIndex) {
-        segments.push({ type: 'text', value: stripped.slice(lastIndex, match.index) });
-      }
-      segments.push({ type: 'html', value: `<mark>${escapeHtml(match[1])}</mark>` });
-      lastIndex = match.index + match[0].length;
-    }
-    if (lastIndex < stripped.length) {
-      segments.push({ type: 'text', value: stripped.slice(lastIndex) });
-    }
-
-    const parent = ctx.parent(node);
-    const index = ctx.indexOf(node);
-    if (!parent || index === undefined) return;
-
-    ctx.removeNode(node);
-    ctx.insertChildAt(parent, index, segments);
   },
 };
 
-// ── MDAST plugin: convert directives to HTML ─────────────────────────────────
+// ── MDAST plugin: Container directives ───────────────────────────────────────
 export const directiveToHtml = {
   name: 'directive-to-html',
   containerDirective(node: any, ctx: any) {
@@ -123,11 +139,37 @@ export const directiveToHtml = {
     const children: any[] = Array.isArray(node.children) ? node.children : [];
     const innerHtml = children.map(extractHtml).join('\n');
 
-    const label = `<span class="${name}__label">${name}</span>`;
+    const label = `<span class="${name}__label marginalia__label">${name}</span>`;
     const date: string | undefined = node.attributes?.date;
-    const dateHtml = date ? `\n<span class="${name}__date">${escapeHtml(date)}</span>` : '';
+    const dateHtml = date ? `\n<span class="${name}__date marginalia__date">${escapeHtml(date)}</span>` : '';
 
-    const fullHtml = `<div class="${name}">${label}\n${innerHtml}${dateHtml}</div>`;
+    const fullHtml = `<div class="${name} marginalia marginalia--${name}">${label}\n${innerHtml}${dateHtml}</div>`;
     ctx.replaceNode(node, { type: 'html', value: fullHtml });
+  },
+};
+
+// ── HAST plugin: blockquote attribution ──────────────────────────────────────
+export const blockquoteAttribution = {
+  name: 'blockquote-attribution',
+  element: {
+    filter: ['blockquote'],
+    visit(node: any, ctx: any) {
+      const pElements = (node.children ?? []).filter(
+        (c: any) => c.type === 'element' && c.tagName === 'p',
+      );
+      if (!pElements.length) return;
+      const lastP = pElements[pElements.length - 1];
+      const text = ctx.textContent(lastP).trim();
+      if (text.startsWith('—') || text.startsWith('--')) {
+        const existingClass = Array.isArray(lastP.properties?.className)
+          ? lastP.properties.className
+          : [];
+        ctx.setProperty(lastP, 'className', [
+          ...existingClass,
+          'editorial-attribution',
+          'blockquote__attribution',
+        ]);
+      }
+    },
   },
 };

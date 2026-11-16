@@ -2,27 +2,33 @@
   "name": "tiny",
   "description": "A tiny publishing theme for Astro.",
   "type": "module",
-  "version": "0.0.2",
+  "version": "0.2.0",
+  "license": "MIT",
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
     "dev": "astro dev --host",
     "build": "astro build",
+    "test": "node --experimental-strip-types ./tests/tiny.check.ts",
     "preview": "astro preview",
     "astro": "astro",
     "deploy": "pnpm build && wrangler deploy",
     "cf:dev": "pnpm build && wrangler dev"
   },
   "dependencies": {
-    "@astrojs/markdown-satteri": "^0.4.0",
-    "@astrojs/mdx": "^8.0.0",
+    "@astrojs/markdown-satteri": "^0.4.10",
+    "@astrojs/mdx": "^8.1.6",
     "@astrojs/rss": "^4.0.19",
-    "@astrojs/sitemap": "^3.7.4",
-    "astro": "^7.3.1",
+    "@astrojs/sitemap": "^3.7.5",
+    "astro": "^7.4.12",
+    "geist": "^1.9.2",
+    "katex": "^0.19.1",
+    "satteri": "0.11.7",
     "sharp": "^0.35.3"
   },
   "devDependencies": {
+    "@types/katex": "^0.16.8",
     "wrangler": "^4.125.0"
   },
   "pnpm": {

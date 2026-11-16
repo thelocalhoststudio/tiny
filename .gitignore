@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # Agents
 .claude
+
+# local content
+src/content_full/
