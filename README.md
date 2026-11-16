@@ -1,207 +1,146 @@
 # Tiny
 
-A tiny publishing theme for Astro.
+A minimalist, content-first publishing theme for [Astro](https://astro.build).
+
+Designed for independent writers, researchers, and builders who value clean typography, thoughtful reading experiences, and durable plain-text authoring.
 
 ## Philosophy
 
-Tiny is built around one idea: a personal site should be mostly content,
-not chrome. In practice that means:
+Tiny is built around one idea: a personal publishing site should be mostly content, not chrome.
 
-- Minimal HTML, minimal CSS, no design-token system
-- Zero unnecessary client-side JavaScript
-- Few dependencies — Astro, one Markdown processor, RSS, sitemap
-- System fonts by default, no font loading pipeline
-- No cards, no badges, no pills, no decorative UI
-- No CSS framework, no JS framework, no client router
-- A simple Astro architecture: content collections in, static HTML out
+- **Content-first editorial layout**: Minimal HTML and CSS, restrained design tokens, and no decorative cards, gradients, or pills.
+- **Zero unnecessary client JavaScript**: Static HTML generation by default; only client theme switching and fast search use minimal vanilla JS.
+- **Durable Markdown authoring**: Full support for Obsidian-compatible wikilinks, native callouts, KaTeX math, and relative note links.
+- **Self-hosted variable typography**: Typeset exclusively in Geist Sans (body, headings, UI) and Geist Mono (metadata, dates, code, source gutter). Zero external CDN font requests.
+- **Metadata-driven discovery**: Configurable multi-dimensional Browse engine for tags, years, topics, and author metadata.
 
-This isn't a claim about being the fastest Astro theme, just a theme that
-tries hard not to add anything a small personal site doesn't need.
+## Feature Overview
 
-## Features
-
-- **Posts and pages** as Astro content collections, with a browse system for
-  tags, years, and any custom frontmatter metadata you define
-- **Markdown and MDX** support for both posts and pages
-- **RSS feed** (`/rss.xml`) and **XML sitemap**
-- **Site configuration as content** — `src/content/site/config.md`, not a
-  code file
-- **Sätteri**-powered Markdown pipeline: GFM tables and footnotes,
-  wikilinks (`[[Post Title]]`), container directives (`:::aside`,
-  `:::annotation`), smart punctuation, subscript/superscript, and
-  Obsidian-style `==highlights==` and `%%inline comments%%`
-- **Image support** in post/page body content, with consecutive images
-  automatically grouped into a simple CSS grid gallery — no JS, no
-  lightbox library
-- **Dark mode** via `prefers-color-scheme`, no toggle, no stored preference
-- Canonical URLs, Open Graph/Twitter meta, and JSON-LD structured data
-- Fully static output — no server required at runtime
+- **Posts, Pages, and Docs Collections** — Statically verified through Astro Content Collections schemas.
+- **Native Obsidian Callouts** — Build-time semantic `<aside>` callouts supporting 10 standard types (`NOTE`, `INFO`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`, `DANGER`, `SUCCESS`, `QUESTION`, `ABSTRACT`) with custom titles and nested Markdown.
+- **Markdown Source Gutter** — Build-time syntax markers (`#`, `##`, `-`, `1.`, `>`, `[!tip]`, ` ``` `, `$$`, `![]`, `|`) rendered in a dedicated left gutter on desktop and inline on mobile via semantic `data-md` HAST attributes.
+- **Fast Build-Time Math** — KaTeX rendering for `$inline$` and `$$display$$` math expressions with zero client-side math script.
+- **Wikilinks, Relative Note Links & Inbound Backlinks** — `[[Post Title]]`, `[[Post Title|Alias]]`, `[[Post Title#Section]]`, and relative `./note.md` links resolved at build time; inbound references automatically indexed and displayed.
+- **Contextual Browse Breadcrumbs** — Compact, clickable breadcrumb paths above post titles (`notes / 2026 / #tag`) derived directly from configured Browse dimensions.
+- **Multi-Year Post Archive** — Chronological post index grouped by year with fixed date columns, horizontal year jumps, and inbound reference badges.
+- **Fast Static Search** (`/search`) — Full-text search over a static JSON index (`/search.json`) with live `<mark>` keyword highlighting and `/` keyboard shortcut.
+- **Light, Dark, and System Theme Modes** — Pure CSS variables with a zero-flash inline script and accessible header toggle.
+- **Editorial Images & Pure CSS Lightbox** — Automatic responsive CSS grid gallery grouping for consecutive images, pure CSS zero-JS modal lightbox (`:target`), and editorial captions (`*caption*`).
+- **Standard Feeds** — RSS feed (`/rss.xml`) and sitemap (`/sitemap-index.xml`).
 
 ## Requirements
 
-- Node.js >= 22.12.0
-- [pnpm](https://pnpm.io) (the project ships a `pnpm-lock.yaml`)
+- **Node.js**: `>= 22.12.0`
+- **pnpm**: `>= 9.0.0` recommended (repository includes `pnpm-lock.yaml`)
 
-## Installation
+## Quick Start
 
 ```sh
-git clone <your-fork-url>
+# Clone the repository
+git clone https://github.com/thelocalhoststudio/tiny.git
 cd tiny
+
+# Install dependencies
 pnpm install
+
+# Setup environment variables
 cp .env.example .env
+
+# Start local development server
+pnpm dev
 ```
 
-Set `SITE_URL` in `.env` to your site's real URL, then edit
-`src/content/site/config.md` with your own title, description, and links
-(see [Configuration](#configuration) below).
+Visit `http://localhost:4321` in your browser.
 
-```sh
-pnpm dev      # start the dev server
-pnpm build    # build to ./dist
-pnpm preview  # preview the production build locally
-```
+## Development Scripts
 
-## Configuration
+| Command | Action |
+| :--- | :--- |
+| `pnpm dev` | Start development server |
+| `pnpm build` | Compile static production build to `./dist` |
+| `pnpm preview` | Preview production build locally |
+| `pnpm test` | Run complete unit and integration test suite (`tests/tiny.check.ts`) |
 
-Tiny separates two kinds of configuration:
+> [!NOTE] Background Development Server
+> When running Astro in background automation, use:
+> ```sh
+> astro dev --background
+> ```
+> Manage the process with `astro dev status`, `astro dev logs`, and `astro dev stop`.
 
-**`SITE_URL`** (in `.env`) — deployment configuration. It's the absolute
-URL Astro needs to build canonical links, the sitemap, and RSS item links.
-It is not content, and it isn't checked into git (`.env` is gitignored;
-`.env.example` documents the variable for anyone cloning the repo).
+## Configuration Architecture
 
-**`src/content/site/config.md`** — content-facing site configuration: your
-site's title, description, author, navigation links, and browse
-dimensions. Edit this like any other piece of content.
+Tiny organizes configuration into clear, modular domains defined in `src/site.config.ts` and customizable in `src/content/site/config.md`:
 
-A minimal example:
+1. **Site Identity**: `title`, `description`, `locale`, `author` (name, url, avatar).
+2. **Navigation**: `headerLinks`, `footerLinks`, `socialLinks`, `footerCredits`.
+3. **Browse**: Configurable dimensions mapping frontmatter keys to URL paths (e.g., `tags`, `published` as `years`, `topic` as `topics`).
+4. **SEO**: `siteUrl`, `defaultOgImage`, `titleTemplate`, `twitterHandle`.
+5. **Theme**: `enabled`, `default` (`system` | `light` | `dark`).
+6. **Features**: Feature flags for `sourceGutter`, `backlinks`, `math`, `search`, `docs`, `toc`.
+7. **Search**: `enabled`.
+8. **Analytics**: Privacy-respecting analytics provider (`plausible`, `fathom`, `umami`, or `null`).
+9. **UI Text**: Localized interface strings (`skipToContent`, `older`, `newer`, `search`, `inboundReferences`, etc.).
+
+Read the [Configuration Guide](src/content/docs/configuration.md) for full reference.
+
+## Content Structure
+
+- **Posts** (`src/content/posts/`): Long-form articles and notes. Nested folders become URL segments (`posts/essays/deep-work.md` &rarr; `/posts/essays/deep-work`); folders prefixed with `_` are omitted from the URL.
+- **Pages** (`src/content/pages/`): Top-level static pages (`about.md`, `colophon.md`, `now.md`).
+- **Docs** (`src/content/docs/`): Grouped documentation entries (`getting-started.md`, `configuration.md`, etc.).
+
+Example post frontmatter:
 
 ```yaml
 ---
-title: My Site
-description: Notes and short essays.
-locale: en
-author:
-  name: Jane Doe
-headerLinks:
-  - label: Blog
-    url: /posts
-  - label: About
-    url: /about
-browse:
-  dimensions:
-    - key: tags
-      slug: tags
-      label: Tags
----
-```
-
-## Content
-
-- **Posts** live in `src/content/posts/` as `.md` or `.mdx` files. Nested
-  folders become part of the URL (`posts/travel/tokyo.md` →
-  `/posts/travel/tokyo`); a folder prefixed with `_` is used for
-  organization only and is left out of the URL.
-- **Pages** live in `src/content/pages/` and are served at the site root
-  (`pages/about.md` → `/about`).
-
-Post frontmatter:
-
-```yaml
----
-title: A short post
-description: One sentence, optional.
-published: 2026-01-10
-updated: 2026-02-01     # optional
-draft: false            # drafts are hidden from production builds
-tags: [notes, writing]  # letters only, lowercased automatically
+title: Autumn in Kyoto
+description: Morning light, temples, and shooting with a fixed prime lens.
+published: 2025-11-12
+tags: [photography, travel]
 meta:
-  topic: Essays          # optional — becomes a browse dimension if configured
+  topic: Photography
 ---
-
-Ordinary Markdown content goes here.
 ```
 
-Pages use the same idea with a smaller frontmatter: `title`, an optional
-`description`, and an optional `updated` date.
+Read [Content Structure & Authoring](src/content/docs/content-structure.md) for complete details.
 
-## Images
+## Markdown & Sätteri Pipeline
 
-Drop an image into a post with standard Markdown syntax:
+Tiny's Markdown pipeline is powered by **Sätteri** (`@astrojs/markdown-satteri`) with custom AST plugins:
 
-```md
-![A photo of the harbor at dusk](/images/posts/harbor.jpg)
+```
+Markdown Source
+  │
+  ├── MDAST Plugins (Callouts, Math, Directives, Vault Images, Note Links)
+  │
+  ├── Sätteri Core Transform
+  │
+  └── HAST Plugins (Wikilinks, Image Attributes, Gallery, Captions, Source Gutter)
 ```
 
-Store images under `public/images/` and reference them with a root-relative
-path. When two or more images appear back to back with nothing but
-whitespace between them, Tiny groups them into a lightweight CSS grid
-automatically — no gallery component or client-side script involved.
+- **Callouts**:
+  ```markdown
+  > [!TIP] Photography Tip
+  > Meter for the highlights when shooting morning mist.
+  ```
+- **Math**: `$E = mc^2$` and `$$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$`.
+- **Wikilinks**: `[[Post Title]]`, `[[Post Title|Alias]]`, `[[Post Title#Heading]]`. (Resolves to `/posts/<slug>`).
+- **Galleries**: Consecutive image paragraphs automatically group into a CSS grid with a pure CSS lightbox.
 
-## Markdown
+Read the [Markdown Features Guide](src/content/docs/markdown-guide.md) and [Wikilinks & Backlinks](src/content/docs/wikilinks-and-backlinks.md).
 
-The Markdown pipeline is powered by **Sätteri** (`@astrojs/markdown-satteri`)
-with a few extras enabled on top of standard GFM (tables, footnotes,
-strikethrough):
+## Project Documentation
 
-- **Wikilinks** — `[[Post Title]]` links to that post by title
-- **Directives** — `:::aside` and `:::annotation{date="2026-01-01"}` render
-  as labeled callout blocks
-- **Highlights and comments** — `==highlighted text==` renders as
-  `<mark>`; `%%a note to self%%` is stripped from the output entirely
-- **Smart punctuation, subscript, superscript** — plain ASCII in, typeset
-  output out (`"quotes"` → “quotes”, `H~2~O`, `E=mc^2^`)
+Full documentation is available directly within the theme at `/docs` (and in source under `src/content/docs/`):
 
-None of this is required — a post that never uses any of it reads exactly
-the same as one that does.
+- [Getting Started](src/content/docs/getting-started.md)
+- [Configuration Reference](src/content/docs/configuration.md)
+- [Content Structure & Authoring](src/content/docs/content-structure.md)
+- [Markdown Features](src/content/docs/markdown-guide.md)
+- [Wikilinks and Backlinks](src/content/docs/wikilinks-and-backlinks.md)
+- [Deployment & Production](src/content/docs/deployment.md)
 
-## Development
+## License
 
-```sh
-pnpm dev       # dev server
-pnpm build     # production build to ./dist
-pnpm preview   # preview the production build
-```
-
-## Deployment
-
-Tiny builds to plain static files (`astro build` → `./dist`), so it runs on
-any static host — Cloudflare Pages, Netlify, Vercel, GitHub Pages, or your
-own server. Cloudflare Pages is one option, not a requirement; there's no
-adapter tying the project to a specific platform.
-
-Whichever platform you use, set `SITE_URL` as a build-time environment
-variable there too — it's read at build time, not runtime, so it has to be
-present when `astro build` runs on the deploy platform, not just in your
-local `.env`.
-
-## Project structure
-
-```text
-src/
-├── content/
-│   ├── posts/        # blog posts (.md / .mdx)
-│   ├── pages/         # standalone pages (.md / .mdx)
-│   └── site/
-│       └── config.md  # site-facing configuration
-├── components/         # Header, Footer, PostList, etc.
-├── layouts/
-│   └── Base.astro      # the one shared page layout
-├── pages/               # Astro routes
-├── plugins/              # Sätteri mdast/hast plugins
-├── styles/
-│   └── global.css        # the entire stylesheet
-└── utils/                 # content, browse, and URL helpers
-```
-
-## Non-goals
-
-Tiny deliberately does not try to be:
-
-- a CMS
-- a page builder
-- a design system
-- a component-heavy theme
-- an Obsidian-specific theme (it happens to read Obsidian-flavored
-  Markdown quietly well, but that isn't its identity)
-- a JavaScript application
+MIT License. See [LICENSE](LICENSE) for details.

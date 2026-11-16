@@ -1,0 +1,43 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import ContentHeader from "@/components/ContentHeader.astro";
+import TableOfContents from "@/components/TableOfContents.astro";
+import { slugify, countWords, readingMinutes } from "@/utils/text";
+
+export async function getStaticPaths() {
+  const docs = await getCollection("docs");
+
+  return docs.map((doc) => ({
+    params: { slug: slugify(doc.id) },
+    props: { doc },
+  }));
+}
+
+const { doc } = Astro.props;
+const { Content, headings } = await render(doc);
+const { title, description, updated, group } = doc.data;
+
+const words = doc.body ? countWords(doc.body) : undefined;
+const readTime = words ? readingMinutes(words) : undefined;
+---
+
+<Base title={`${title} — Documentation`} description={description} updated={updated}>
+  <article>
+    <ContentHeader
+      title={title}
+      description={description}
+      updated={updated}
+      words={words}
+      readingMinutes={readTime}
+      backHref="/docs"
+      backLabel={`← ${group || 'Docs'}`}
+    />
+
+    <TableOfContents headings={headings} />
+
+    <div class="content-body">
+      <Content />
+    </div>
+  </article>
+</Base>

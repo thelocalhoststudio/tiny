@@ -34,3 +34,8 @@ Cutting those claims down — no card grids for a list of five links, no
 badge for a tag that's already a link, no gradient behind a heading that
 doesn't need one — isn't a style. It's closer to editing: the page says what
 it needs to and stops.
+
+As discussed in [[tools-we-shape|Tools We Shape and Tools That Shape Us]], physical and digital
+craft share the same demand for boundaries. When typography is purposeful,
+as explored in [[The Craft of Functional Typography]], the page doesn't need
+ornaments to feel complete.

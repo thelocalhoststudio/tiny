@@ -1,4 +1,5 @@
-const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const rawBase = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
+const base = rawBase.replace(/\/+$/, "");
 const baseRoot = base === "" ? "/" : `${base}/`;
 
 function isExternal(path: string): boolean {

@@ -15,7 +15,7 @@ using it." Everything else is a future maintenance cost wearing the
 disguise of a feature.
 
 This site is a small example. It has posts, pages, and a way to browse both
-— and stops there. No search index, no tagging UI beyond plain links, no
-admin dashboard nobody but its author will ever see. Not because those
-things are bad ideas everywhere, but because none of them were needed here,
-and unneeded code is still code someone has to carry.
+— and stops there. Not because search or databases are bad ideas everywhere,
+but because each component has an ongoing cost. When software is built for durability,
+such as [[local-first-software|local-first architectures]],
+every dependency left out is a liability avoided.

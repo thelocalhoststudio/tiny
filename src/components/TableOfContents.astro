@@ -1,0 +1,28 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+type Props = {
+  headings?: MarkdownHeading[];
+  minHeadings?: number;
+};
+
+const { headings = [], minHeadings = 2 } = Astro.props;
+
+// Filter for h2 and h3
+const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{tocHeadings.length >= minHeadings && (
+  <nav class="toc" aria-label="Table of Contents">
+    <details open>
+      <summary>Contents</summary>
+      <ul>
+        {tocHeadings.map((heading) => (
+          <li class={`toc-depth-${heading.depth}`}>
+            <a href={`#${heading.slug}`}>{heading.text}</a>
+          </li>
+        ))}
+      </ul>
+    </details>
+  </nav>
+)}

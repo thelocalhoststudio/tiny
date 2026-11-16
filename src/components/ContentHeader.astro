@@ -1,4 +1,5 @@
 ---
+import type { BreadcrumbLevel } from "@/utils/browse";
 import { formatDate } from "@/utils/text";
 
 type Props = {
@@ -6,27 +7,109 @@ type Props = {
   description?: string;
   published?: Date;
   updated?: Date;
+  words?: number;
+  readingMinutes?: number;
+  tags?: { label: string; href: string }[];
+  inboundCount?: number;
+  backHref?: string;
+  backLabel?: string;
+  breadcrumbs?: BreadcrumbLevel[];
 };
 
-const { title, description, published, updated } = Astro.props;
+const {
+  title,
+  description,
+  published,
+  updated,
+  words,
+  readingMinutes,
+  tags = [],
+  inboundCount,
+  backHref,
+  backLabel,
+  breadcrumbs = [],
+} = Astro.props;
 ---
 
-<header>
-  <h1 class="title">{title}</h1>
-  {(published || updated) && (
-    <p class="meta">
-      {published && <time datetime={published.toISOString()}>{formatDate(published)}</time>}
+<header class="content-header">
+  {breadcrumbs.length > 0 ? (
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ol class="breadcrumb__list">
+        {breadcrumbs.map((level, idx) => (
+          <>
+            {idx > 0 && <li class="breadcrumb__separator" aria-hidden="true">/</li>}
+            <li class="breadcrumb__level">
+              {level.map((item) => (
+                <a
+                  href={item.href}
+                  class:list={[
+                    "breadcrumb__link",
+                    item.isMono || item.isTag ? "breadcrumb__mono" : "breadcrumb__dim",
+                    { "breadcrumb__tag": item.isTag },
+                  ]}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </li>
+          </>
+        ))}
+      </ol>
+    </nav>
+  ) : backHref ? (
+    <div class="content-header__context">
+      <a href={backHref}>{backLabel || "← Back"}</a>
+    </div>
+  ) : null}
+
+  <h1 class="content-header__title">{title}</h1>
+
+  {(published || words || readingMinutes || (tags.length > 0 && breadcrumbs.length === 0) || (inboundCount !== undefined && inboundCount > 0)) && (
+    <div class="content-header__meta">
+      {published && (
+        <time datetime={published.toISOString()}>
+          {formatDate(published)}
+        </time>
+      )}
+
       {updated && (
-      <>
-        <span aria-hidden="true"> · </span>
-        <span>
-          updated{" "}
-          <time datetime={updated.toISOString()}>
-            {formatDate(updated)}
-          </time>
-        </span>
-      </>
-    )}
-    </p>
+        <>
+          <span class="meta-separator" aria-hidden="true">·</span>
+          <span>updated <time datetime={updated.toISOString()}>{formatDate(updated)}</time></span>
+        </>
+      )}
+
+      {readingMinutes && (
+        <>
+          <span class="meta-separator" aria-hidden="true">·</span>
+          <span>{readingMinutes} min read</span>
+        </>
+      )}
+
+      {words && (
+        <>
+          <span class="meta-separator" aria-hidden="true">·</span>
+          <span>{words.toLocaleString()} words</span>
+        </>
+      )}
+
+      {inboundCount !== undefined && inboundCount > 0 && (
+        <>
+          <span class="meta-separator" aria-hidden="true">·</span>
+          <span>{inboundCount} {inboundCount === 1 ? 'link' : 'links'}</span>
+        </>
+      )}
+
+      {tags.length > 0 && breadcrumbs.length === 0 && (
+        <>
+          <span class="meta-separator" aria-hidden="true">·</span>
+          <span class="content-header__tags">
+            {tags.map((tag) => (
+              <a href={tag.href}>#{tag.label}</a>
+            ))}
+          </span>
+        </>
+      )}
+    </div>
   )}
 </header>

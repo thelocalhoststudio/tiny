@@ -1,0 +1,134 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "@/layouts/Base.astro";
+import { slugify } from "@/utils/text";
+
+const allDocs = await getCollection("docs");
+allDocs.sort((a, b) => a.data.order - b.data.order);
+
+// Render each doc to extract headings
+const docsWithHeadings = await Promise.all(
+  allDocs.map(async (doc) => {
+    const { headings } = await render(doc);
+    return {
+      doc,
+      slug: slugify(doc.id),
+      headings: headings.filter((h) => h.depth === 2 || h.depth === 3),
+    };
+  }),
+);
+
+// Group entries
+const groups = docsWithHeadings.reduce<Record<string, typeof docsWithHeadings>>((acc, item) => {
+  const g = item.doc.data.group || "General";
+  (acc[g] ??= []).push(item);
+  return acc;
+}, {});
+---
+
+<Base title="Documentation" description="Documentation, guides, and architectural reference.">
+  <h1>Documentation</h1>
+  <p class="meta">Guides, specifications, and reference notes.</p>
+
+  <div class="docs-index">
+    {Object.entries(groups).map(([groupName, items]) => (
+      <section class="docs-group">
+        <h2 class="docs-group__title">{groupName}</h2>
+        <div class="docs-group__list">
+          {items.map(({ doc, slug, headings }) => (
+            <div class="docs-card">
+              <h3 class="docs-card__title">
+                <a href={`/docs/${slug}`}>{doc.data.title}</a>
+              </h3>
+              {doc.data.description && (
+                <p class="docs-card__desc">{doc.data.description}</p>
+              )}
+              {headings.length > 0 && (
+                <ul class="docs-card__headings">
+                  {headings.map((h) => (
+                    <li class={`docs-heading-depth-${h.depth}`}>
+                      <a href={`/docs/${slug}#${h.slug}`}>{h.text}</a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
+</Base>
+
+<style>
+  .docs-index {
+    margin-top: 2rem;
+  }
+
+  .docs-group {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .docs-group:last-child {
+    border-bottom: none;
+  }
+
+  .docs-group__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 1.25rem;
+  }
+
+  .docs-group__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .docs-card {
+    padding: 0.5rem 0;
+  }
+
+  .docs-card__title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem;
+  }
+
+  .docs-card__title a {
+    color: var(--foreground);
+    text-decoration: none;
+  }
+
+  .docs-card__title a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+
+  .docs-card__desc {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin: 0.25rem 0 0.75rem;
+  }
+
+  .docs-card__headings {
+    list-style: none;
+    padding-left: 0;
+    margin: 0.5rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-size: 0.88rem;
+  }
+
+  .docs-card__headings li a {
+    color: var(--text-muted);
+  }
+
+  .docs-card__headings li a:hover {
+    color: var(--primary);
+  }
+</style>

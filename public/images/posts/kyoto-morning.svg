@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="kyoto-morning-title">
+  <title id="kyoto-morning-title">Morning mist over the rooftops of Higashiyama, Kyoto</title>
+  <rect width="800" height="450" fill="#202224" />
+  <!-- Distant mountains -->
+  <path d="M0 260 Q 200 180, 450 240 T 800 210 L 800 450 L 0 450 Z" fill="#2a2e33" opacity="0.6" />
+  <path d="M0 290 Q 280 230, 520 280 T 800 260 L 800 450 L 0 450 Z" fill="#1b1d20" />
+  <!-- Pagoda silhouette -->
+  <rect x="220" y="240" width="24" height="70" fill="#111214" />
+  <path d="M210 240 L232 205 L254 240 Z" fill="#111214" />
+  <path d="M204 265 L232 235 L260 265 Z" fill="#111214" />
+  <path d="M198 290 L232 260 L266 290 Z" fill="#111214" />
+  <line x1="232" y1="205" x2="232" y2="180" stroke="#111214" stroke-width="2" />
+  <!-- Morning sun / glow -->
+  <circle cx="620" cy="180" r="45" fill="#d97757" opacity="0.85" />
+  <!-- Foreground roofs -->
+  <path d="M0 380 L 140 340 L 280 390 L 480 350 L 640 400 L 800 360 L 800 450 L 0 450 Z" fill="#0d0e0f" />
+</svg>

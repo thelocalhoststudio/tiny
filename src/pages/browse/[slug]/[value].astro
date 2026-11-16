@@ -22,7 +22,18 @@ const posts = await getAllPosts();
 const filtered = filterBrowseEntries(posts, dimension.key, value.slug);
 ---
 
-<Base title={value.value} description={`Posts filed under ${dimension.label.toLowerCase()}: ${value.value}.`}>
-  <h2>{titleify(value.value)}</h2>
-  <PostList posts={filtered} />
+<Base
+  title={`${value.value} — ${dimension.label}`}
+  description={`Posts filed under ${dimension.label.toLowerCase()}: ${value.value}.`}
+>
+  <div class="content-header__context">
+    <a href={`/browse/${dimension.slug}`}>← {dimension.label}</a>
+  </div>
+
+  <h1>{titleify(value.value)}</h1>
+  <p class="meta">
+    {filtered.length} {filtered.length === 1 ? "post" : "posts"} in {dimension.label.toLowerCase()}.
+  </p>
+
+  <PostList posts={filtered} showYear={true} showTags={true} />
 </Base>

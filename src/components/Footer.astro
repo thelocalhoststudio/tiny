@@ -2,21 +2,57 @@
 import { getConfig } from "@/utils/config";
 
 const siteConfig = await getConfig();
-const hasSocialLinks = (siteConfig.socialLinks?.length ?? 0) > 0;
-const hasFooterLinks = (siteConfig.footerLinks?.length ?? 0) > 0;
+const credits = siteConfig.footerCredits || "Built with Tiny";
+const description = siteConfig.description;
+const footerLinks = siteConfig.footerLinks ?? [];
+const socialLinks = siteConfig.socialLinks ?? [];
+const hasFooterLinks = footerLinks.length > 0;
+const hasSocialLinks = socialLinks.length > 0;
 ---
 
-<footer>
-  {hasSocialLinks && (
-    <p class="meta">
-      {siteConfig.socialLinks!.map((link) => <a href={link.url}>{link.label}</a>)}
-    </p>
-  )}
-  {(siteConfig.footerCredits || hasFooterLinks) && (
-    <p class="meta">
-      {siteConfig.footerCredits}
-      {siteConfig.footerCredits && hasFooterLinks && " · "}
-      {siteConfig.footerLinks?.map((link) => <a href={link.url}>{link.label}</a>)}
-    </p>
-  )}
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div class="site-footer__attribution">
+      <span class="site-footer__credit">{credits}</span>
+      {description && (
+        <p class="site-footer__description">{description}</p>
+      )}
+    </div>
+
+    {(hasFooterLinks || hasSocialLinks) && (
+      <div class="site-footer__navigation">
+        {hasFooterLinks && (
+          <nav class="site-footer__nav" aria-label="Footer navigation">
+            <ul class="site-footer__list">
+              {footerLinks.map((link) => (
+                <li class="site-footer__item">
+                  <a href={link.url} class="site-footer__link">
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+
+        {hasSocialLinks && (
+          <nav class="site-footer__social" aria-label="External links">
+            <ul class="site-footer__list site-footer__list--social">
+              {socialLinks.map((link) => (
+                <li class="site-footer__item">
+                  <a
+                    href={link.url}
+                    rel="noopener noreferrer"
+                    class="site-footer__link site-footer__link--social"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+      </div>
+    )}
+  </div>
 </footer>

@@ -2,32 +2,49 @@
 import Base from "@/layouts/Base.astro";
 import PostList from "@/components/PostList.astro";
 import { getAllPosts, getPostsGroupedByYear } from "@/utils/content";
+import { getBrowseDimensions } from "@/utils/browse";
 
 const posts = await getAllPosts();
 const grouped = getPostsGroupedByYear(posts);
+
+const dimensions = await getBrowseDimensions();
+const yearDimension = dimensions.find((d) =>
+  ["published", "year", "date"].includes(d.key.toLowerCase()) ||
+  ["years", "year"].includes(d.slug.toLowerCase()),
+);
+const yearSlug = yearDimension?.slug || "years";
 ---
 
-<Base title="Posts" description="All posts, newest first.">
+<Base title="All Posts" description="Complete chronological archive of posts.">
   <h1>Posts</h1>
+  <p class="meta">{posts.length} {posts.length === 1 ? 'post' : 'posts'} published.</p>
 
-  <nav class="year-nav meta" aria-label="Jump to year">
-    {grouped.map(([year], index) => (
-      <span>
-        <a href={`#${year}`}>{year}</a>
-        {index < grouped.length - 1 && <span aria-hidden="true"> · </span>}
-      </span>
-    ))}
-  </nav>
+  {grouped.length > 1 && (
+    <nav class="year-nav" aria-label="Jump to year">
+      {grouped.map(([year], index) => (
+        <span>
+          <a href={`#${year}`}>{year}</a>
+          {index < grouped.length - 1 && <span class="meta-separator" aria-hidden="true"> · </span>}
+        </span>
+      ))}
+    </nav>
+  )}
 
-  {grouped.map(([year, yearPosts]) => (
-    <section>
-      <h3 id={year} class="year-heading">
-        <a href={`#${year}`}>
-          {year}
-          <span class="anchor-hash" aria-hidden="true">#</span>
-        </a>
-      </h3>
-      <PostList posts={yearPosts} showYear={false} />
-    </section>
-  ))}
+  {grouped.map(([year, yearPosts]) => {
+    const yearBrowseUrl = `/browse/${yearSlug}/${year}`;
+
+    return (
+      <section class="posts-year-section">
+        <h2 id={year} class="year-heading">
+          <a href={yearBrowseUrl} class="year-heading__title" title={`Browse posts from ${year}`}>
+            {year}
+          </a>
+          <a href={`#${year}`} class="anchor-hash" aria-label={`Direct link to ${year} section`}>
+            #
+          </a>
+        </h2>
+        <PostList posts={yearPosts} showYear={false} showTags={true} showInboundCounts={true} />
+      </section>
+    );
+  })}
 </Base>

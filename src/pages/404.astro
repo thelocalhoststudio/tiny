@@ -1,9 +1,14 @@
 ---
 import Base from "@/layouts/Base.astro";
+import { getConfig } from "@/utils/config";
+
+const siteConfig = await getConfig();
+const title = siteConfig.ui?.notFound || "Page not found";
+const backHome = siteConfig.ui?.backHome || "Go back home";
 ---
 
-<Base title="Page not found">
-  <h2>Page not found</h2>
+<Base title={title}>
+  <h2>{title}</h2>
   <p>The page you're looking for doesn't exist, or has moved.</p>
-  <p><a href="/">Go home</a></p>
+  <p><a href="/">{backHome}</a></p>
 </Base>

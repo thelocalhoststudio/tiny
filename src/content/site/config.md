@@ -18,6 +18,8 @@ footerLinks:
     url: /now
   - label: Colophon
     url: /colophon
+  - label: Docs
+    url: /docs
   - label: RSS
     url: /rss.xml
 socialLinks:

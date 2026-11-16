@@ -12,12 +12,19 @@ Markdown — headings, lists, tables, the usual set. This post covers what's
 layered on top of it. None of it changes how a post is written day to day;
 it's there for the times it's useful and invisible otherwise.
 
-## Wikilinks
+## Wikilinks and note links
 
 Writing `[[On Intentional Software]]` links straight to that post by title,
 no need to look up its URL or nest it in a folder first: [[On Intentional
-Software]]. Handy for cross-referencing older posts while drafting, without
-breaking flow to go find the exact path.
+Software]].
+
+You can also use aliases with `[[Target|Alias]]`, such as [[Autumn in Kyoto|reflections on Kyoto]],
+or link directly to specific section anchors with `[[Target#Heading]]`, such as
+[[The Craft of Functional Typography#Two Typefaces Are Enough|typographic craft]].
+
+Relative Markdown file links are also automatically converted at build time:
+see [tools we shape](./tools-we-shape.md). Every linked post automatically receives
+an inbound reference in its footer, keeping your publication's web of thought connected.
 
 ## Highlights and comments
 
@@ -32,19 +39,13 @@ author's own benefit, and nowhere else.
 
 ## Callouts
 
-Container directives turn a fenced block into a labeled callout:
+Native Obsidian-compatible callouts render cleanly using blockquote syntax:
 
-:::aside
-A side note that's related to the main text but not part of its argument —
-useful for a tangent that would otherwise interrupt the paragraph it sits
-next to.
-:::
+> [!NOTE] Semantic asides
+> Callouts compile to semantic `<aside>` HTML containers with corresponding data attributes and icons.
 
-:::annotation{date="2026-08-22"}
-Annotations work the same way, with an optional date attached — for a
-follow-up thought added after the fact, without rewriting the original
-paragraph.
-:::
+> [!TIP] Obsidian compatibility
+> Because this syntax matches standard Obsidian callouts, notes drafted in your local vault render seamlessly on the web without translation steps.
 
 ## Subscript and superscript
 

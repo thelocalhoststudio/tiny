@@ -15,14 +15,26 @@ export async function getStaticPaths() {
 const { dimension } = Astro.props;
 const posts = await getAllPosts();
 const values = getBrowseValues(posts, dimension.key);
+const isTags = dimension.slug === "tags";
 ---
 
 <Base title={dimension.label} description={`Browse posts by ${dimension.label.toLowerCase()}.`}>
-  <h2>{dimension.label}</h2>
+  <div class="content-header__context">
+    <a href="/browse">← Browse</a>
+  </div>
+
+  <h1>{dimension.label}</h1>
+  <p class="meta">{values.length} {values.length === 1 ? 'category' : 'categories'} available.</p>
+
   <ul class="browse-list">
     {values.map((value) => (
       <li>
-        <a href={`/browse/${dimension.slug}/${value.slug}`}>{value.value}</a>
+        <a
+          href={`/browse/${dimension.slug}/${value.slug}`}
+          class:list={[{ "browse-tag": isTags }]}
+        >
+          {isTags ? `#${value.value}` : value.value}
+        </a>
         <span class="meta">{value.count} {value.count === 1 ? "article" : "articles"}</span>
       </li>
     ))}

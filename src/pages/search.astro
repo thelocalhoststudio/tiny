@@ -1,0 +1,216 @@
+---
+import Base from "@/layouts/Base.astro";
+import { getAllPosts } from "@/utils/content";
+import { getConfig } from "@/utils/config";
+
+const siteConfig = await getConfig();
+const searchTitle = siteConfig.ui?.search || "Search";
+const posts = await getAllPosts();
+const totalPosts = posts.length;
+---
+
+<Base title={searchTitle} description="Search writing across the site.">
+  <div class="search-container">
+    <h1>{searchTitle}</h1>
+    <p class="meta">Search {totalPosts} posts by title, tag, or text.</p>
+
+    <div class="search-input-wrap">
+      <input
+        type="search"
+        id="search-input"
+        class="search-input"
+        placeholder="Type to search..."
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        aria-label="Search posts"
+        autofocus
+      />
+      <span class="search-shortcut-hint" aria-hidden="true">/</span>
+    </div>
+
+    <div id="search-count" class="search-count">
+      {totalPosts} {totalPosts === 1 ? 'post' : 'posts'} indexed.
+    </div>
+
+    <ul id="search-results" class="search-results" role="region" aria-live="polite"></ul>
+    <div id="search-empty" class="search-empty" style="display: none;"></div>
+  </div>
+</Base>
+
+<script is:inline>
+  (function () {
+    const input = document.getElementById('search-input');
+    const resultsContainer = document.getElementById('search-results');
+    const countContainer = document.getElementById('search-count');
+    const emptyContainer = document.getElementById('search-empty');
+    if (!input || !resultsContainer || !countContainer || !emptyContainer) return;
+
+    let searchIndex = null;
+    let isLoading = false;
+
+    // Load search index
+    async function loadIndex() {
+      if (searchIndex || isLoading) return searchIndex;
+      isLoading = true;
+      try {
+        const res = await fetch('/search.json');
+        searchIndex = await res.json();
+      } catch (err) {
+        console.error('Failed to load search index:', err);
+        searchIndex = [];
+      } finally {
+        isLoading = false;
+      }
+      return searchIndex;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function highlightText(text, terms) {
+      if (!terms.length) return escapeHtml(text);
+      const escapedTerms = terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
+      return escapeHtml(text).replace(regex, '<mark>$1</mark>');
+    }
+
+    function renderResults(results, query, terms) {
+      resultsContainer.innerHTML = '';
+
+      if (!query.trim()) {
+        emptyContainer.style.display = 'none';
+        countContainer.textContent = `${searchIndex ? searchIndex.length : 0} posts indexed.`;
+        return;
+      }
+
+      if (results.length === 0) {
+        emptyContainer.textContent = `No posts found matching "${query}".`;
+        emptyContainer.style.display = 'block';
+        countContainer.textContent = '0 results found.';
+        return;
+      }
+
+      emptyContainer.style.display = 'none';
+      countContainer.textContent = `${results.length} ${results.length === 1 ? 'result' : 'results'} found.`;
+
+      const fragment = document.createDocumentFragment();
+
+      for (const item of results) {
+        const li = document.createElement('li');
+        li.className = 'search-result-item';
+
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'search-result-header';
+
+        const time = document.createElement('time');
+        time.setAttribute('datetime', item.date);
+        time.textContent = item.formattedDate;
+
+        const a = document.createElement('a');
+        a.href = item.url;
+        a.className = 'search-result-title';
+        a.innerHTML = highlightText(item.title, terms);
+
+        headerDiv.appendChild(time);
+        headerDiv.appendChild(a);
+        li.appendChild(headerDiv);
+
+        if (item.matchingExcerpt) {
+          const p = document.createElement('p');
+          p.className = 'search-result-excerpt';
+          p.innerHTML = item.matchingExcerpt;
+          li.appendChild(p);
+        }
+
+        fragment.appendChild(li);
+      }
+
+      resultsContainer.appendChild(fragment);
+    }
+
+    async function performSearch() {
+      const index = await loadIndex();
+      const query = input.value.trim().toLowerCase();
+      if (!query) {
+        renderResults([], '', []);
+        return;
+      }
+
+      const terms = query.split(/\s+/).filter(Boolean);
+
+      const matches = [];
+      for (const item of index) {
+        const titleLower = item.title.toLowerCase();
+        const contentLower = item.content.toLowerCase();
+        const excerptLower = item.excerpt.toLowerCase();
+        const tagsLower = item.tags.map((t) => t.toLowerCase()).join(' ');
+
+        let matched = false;
+        let matchSnippet = item.excerpt;
+
+        // Check if all terms match
+        const allTermsMatch = terms.every(
+          (t) =>
+            titleLower.includes(t) ||
+            contentLower.includes(t) ||
+            excerptLower.includes(t) ||
+            tagsLower.includes(t),
+        );
+
+        if (allTermsMatch) {
+          matched = true;
+          // Extract relevant snippet from content if first term isn't in excerpt
+          const firstTerm = terms[0];
+          const termPos = contentLower.indexOf(firstTerm);
+          if (termPos !== -1 && !excerptLower.includes(firstTerm)) {
+            const start = Math.max(0, termPos - 60);
+            const end = Math.min(item.content.length, termPos + 120);
+            matchSnippet = (start > 0 ? '…' : '') + item.content.slice(start, end) + (end < item.content.length ? '…' : '');
+          }
+        }
+
+        if (matched) {
+          matches.push({
+            ...item,
+            matchingExcerpt: highlightText(matchSnippet, terms),
+          });
+        }
+      }
+
+      // Chronological order (newest first)
+      matches.sort((a, b) => b.timestamp - a.timestamp);
+
+      renderResults(matches, query, terms);
+    }
+
+    // Input event
+    let debounceTimer;
+    input.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(performSearch, 80);
+    });
+
+    // Keyboard shortcut '/' to focus
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== input) {
+        e.preventDefault();
+        input.focus();
+        input.select();
+      } else if (e.key === 'Escape' && document.activeElement === input) {
+        input.value = '';
+        performSearch();
+        input.blur();
+      }
+    });
+
+    // Pre-fetch index on focus or idle
+    input.addEventListener('focus', loadIndex, { once: true });
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(loadIndex);
+    } else {
+      setTimeout(loadIndex, 1000);
+    }
+  })();
+</script>

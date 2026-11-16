@@ -46,13 +46,24 @@ Ordered, for steps that build on each other:
 3. Cut a third of it
 4. Publish
 
-## Blockquotes
+## Blockquotes and callouts
 
 > Simplicity is a great virtue but it requires hard work to achieve it and
 > education to appreciate it.
 
 That's Dijkstra, not this site's author, but it applies equally well to
 Markdown formatting as it does to software.
+
+For structured asides, native Obsidian-compatible callouts render statically without client JavaScript:
+
+> [!NOTE] Design restraint
+> A callout should be reserved for information that genuinely deserves separation from the primary prose.
+
+> [!TIP] Visual harmony
+> Pair callouts with intentional typography as outlined in [[The Craft of Functional Typography]].
+
+> [!WARNING] Avoid overuse
+> Stacking multiple callouts consecutively fragments reading rhythm. Use them sparingly.
 
 ## Code
 
@@ -86,12 +97,20 @@ separate topics.
 
 ---
 
-## Images
+## Images and galleries
 
 Images belong inline, as part of the content — not bolted on as a required
-cover field.
+cover field. Consecutive images automatically cluster into responsive galleries with a pure CSS lightbox, as seen in [[Autumn in Kyoto#Fushimi in the Mist|Kyoto photography]].
 
 ![A simple line diagram showing three boxes connected left to right, labeled Markdown, Build, and HTML](/images/posts/markdown-pipeline.svg)
+
+## Mathematical notation
+
+Fast build-time math rendering powered by KaTeX supports inline equations like $e^{i\pi} + 1 = 0$ as well as display equations:
+
+$$
+f(x) = \frac{1}{\sigma \sqrt{2\pi}} \exp\left( -\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^{\!2}\,\right)
+$$
 
 ## Footnotes
 
